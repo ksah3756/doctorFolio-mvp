@@ -47,18 +47,22 @@ describe('runDiagnosis', () => {
   })
 
   it('단일 종목 30% 이하 → concentration 문제 없음', () => {
+    // 모든 종목이 30% 이하: 현대차 25%, 삼성전자 25%, TIGER 미국 25%, TIGER 채권 25%
     const positions = [
-      makePos({ value: 2_900_000, assetClass: '국내주식', name: '현대차' }),
-      makePos({ value: 4_100_000, assetClass: '국내주식', name: '삼성전자' }),
-      makePos({ value: 3_000_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
+      makePos({ value: 2_500_000, assetClass: '국내주식', name: '현대차' }),
+      makePos({ value: 2_500_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 2_500_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
+      makePos({ value: 2_500_000, assetClass: '채권',     name: 'TIGER 채권' }),
     ]
     const result = runDiagnosis(positions, TARGET)
     expect(result.problems.find(p => p.type === 'concentration_stock')).toBeUndefined()
   })
 
-  it('포트폴리오 양호 (drift < 10pp) → problems 빈 배열', () => {
+  it('포트폴리오 양호 (drift < 10pp, 단일 종목 30% 이하) → problems 빈 배열', () => {
+    // 국내주식 40%를 2종목으로 분산 (각 20%), 해외 30%, 채권 30%
     const positions = [
-      makePos({ value: 4_000_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 2_000_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 2_000_000, assetClass: '국내주식', name: 'SK하이닉스' }),
       makePos({ value: 3_000_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
       makePos({ value: 3_000_000, assetClass: '채권',     name: 'TIGER 채권' }),
     ]

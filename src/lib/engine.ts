@@ -64,10 +64,8 @@ function buildDriftProblems(
 function buildConcentrationProblems(positions: PortfolioPosition[], total: number): Problem[] {
   const problems: Problem[] = []
 
-  // 단일 종목 — 최대 보유 종목 제외하고 검사 (최대 종목은 드리프트로 처리)
-  const maxValue = Math.max(...positions.map(p => p.value))
+  // 단일 종목 — 30% 초과 시 집중 위험
   for (const p of positions) {
-    if (p.value === maxValue) continue  // 최대 보유 종목 스킵
     const currentPct = pct(p.value, total)
     if (currentPct > CONCENTRATION_STOCK) {
       problems.push({
