@@ -1,0 +1,12 @@
+/* src/components/ActionItem.module.css */
+.item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+.item + .item { border-top: 1px solid var(--border); }
+.badge { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; padding: 5px 9px; border-radius: 7px; flex-shrink: 0; }
+.sell { background: var(--red-bg); color: var(--red); }
+.buy  { background: var(--green-bg); color: var(--green); }
+.info { flex: 1; min-width: 0; }
+.name { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+.tax  { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.qty  { text-align: right; flex-shrink: 0; }
+.qtyNum { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.qtyAmt { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
