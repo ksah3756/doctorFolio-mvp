@@ -1,0 +1,107 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+:root {
+  --navy:         #1A237E;
+  --navy-dark:    #121858;
+  --navy-mid:     #3949AB;
+  --navy-tint:    #E8EAF6;
+
+  --bg:           #F4F6FF;
+  --surface:      #FFFFFF;
+  --border:       #E0E4F0;
+  --border-2:     #C7CEEA;
+
+  --text-1:       #111827;
+  --text-2:       #4B5563;
+  --text-3:       #9CA3AF;
+
+  --amber:        #D97706;
+  --amber-bg:     #FFFBEB;
+  --amber-border: #FDE68A;
+  --green:        #059669;
+  --green-bg:     #ECFDF5;
+  --red:          #DC2626;
+  --red-bg:       #FEF2F2;
+
+  --font: 'Pretendard Variable', 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+
+  --radius-card:   14px;
+  --radius-btn:    12px;
+  --radius-badge:  20px;
+  --radius-input:  8px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  max-width: 440px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 600px) {
+  .container {
+    box-shadow: 0 0 0 1px var(--border), 0 8px 32px rgba(0,0,0,.06);
+  }
+}
+
+button { cursor: pointer; font-family: var(--font); }
+a { text-decoration: none; color: inherit; }
+
+.btn-primary {
+  display: block;
+  width: 100%;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: var(--radius-btn);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  transition: background 0.15s;
+}
+.btn-primary:active { background: var(--navy-dark); }
+
+.fixed-cta {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 440px;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 75%, transparent);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.logo {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--navy);
+}
+.logo em { font-style: normal; color: var(--amber); }
+.nav-step { font-size: 12px; font-weight: 600; color: var(--text-3); }
