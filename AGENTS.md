@@ -9,6 +9,37 @@ For any non-trivial code change, follow this order:
 4. Refactor: improve structure only after tests pass.
 5. Review: require an independent reviewer before git management or completion.
 
+## Default Codex Boundary
+
+Unless the user explicitly overrides this, Codex is responsible only for:
+1. planning
+2. implementation
+3. refactoring
+4. tests and verification
+
+After tests/verification pass, Codex must stop and hand off.
+
+Codex must **not** do the following by default:
+- final review
+- PR review
+- PR creation / publish / ship
+- merge or release steps
+
+Those steps are owned by **Claude** unless the user explicitly asks Codex to do them.
+
+Required Codex handoff after implementation/test completion:
+- Plan
+- Files Changed
+- Commands Run
+- Test Results
+- Remaining Risks
+- `Claude Handoff` section with:
+  - Scope
+  - Changed files
+  - Verification completed
+  - Known risks
+  - Suggested review focus
+
 Definition of done:
 - `pnpm verify` passes
 - If `pnpm` is unavailable on `PATH`, use `COREPACK_ENABLE_AUTO_PIN=0 corepack pnpm@9.15.4 verify` without mutating `package.json`
@@ -32,8 +63,8 @@ Rules:
 - **Planner:** writes the short plan, names files to inspect, and lists required test updates before code changes begin.
 - **Implementer:** makes the smallest viable code change that satisfies the plan and hands off without doing final review.
 - **Tester:** adds or updates tests, runs `pnpm verify`, and reports exact failures if verification breaks.
-- **Reviewer:** performs findings-first review, flags missing tests as `P1`, and calls out hidden side effects, risky refactors, security regressions, and auth coverage gaps.
-- **Git Manager:** handles branch, staging, commit, push, and PR hygiene only after review is clean.
+- **Reviewer:** performs findings-first review, flags missing tests as `P1`, and calls out hidden side effects, risky refactors, security regressions, and auth coverage gaps. Default owner: Claude.
+- **Git Manager:** handles branch, staging, commit, push, and PR hygiene only after review is clean. Default owner: Claude.
 
 ## Role Execution Order
 
@@ -45,6 +76,8 @@ Additional rules:
 - Review is required after tests and before git management.
 - If review finds issues, return to implementer, then tester, then run review again.
 - Use the role prompts in `prompts/` for these lanes when delegating to separate agents.
+- By default, Codex executes only through `tester` and then stops with a Claude handoff.
+- `reviewer` and `git-manager` lanes are reserved for Claude unless the user explicitly assigns them to Codex.
 
 ## Role Prompt Files
 
@@ -125,7 +158,10 @@ Code is "easy to change" when it satisfies four criteria: **Readability, Predict
 
 ## Tidy First Approach
 
-- **Structural changes** (renaming, extracting components, updating types) and **behavioral changes** (new logic, API calls) must never be mixed in the same commit.
+**Structural changes** (renaming, extracting components, updating types) and **behavioral changes** (new logic, API calls) must never be mixed in the same commit.
+- Never mix structural and behavioral changes in the same commit
+- Always make structural changes first when both are needed
+- Validate structural changes do not alter behavior by running tests before and after
 
 ## Commit Discipline
 
@@ -142,13 +178,28 @@ Refactor when:
 - A component has 3+ separate responsibilities
 
 ## [Review Mandate]
-Before finalizing any task, you MUST perform a self-review based on the following roles:
+Final review is owned by Claude by default.
+
+Codex should perform the review table below **only if the user explicitly asks Codex to review**.
 1. **Maintainer**: Check for architecture & Tidy First compliance.
 2. **Security Officer**: Check for data safety & financial integrity.
 3. **Performance Engineer**: Check for query optimization & resource usage.
 4. **QA Engineer**: Check for test coverage & edge cases.
 
-Provide the review results in a summarized table format before asking for final approval.
+When Codex is not explicitly assigned review, stop after verification and provide a Claude handoff instead of a review verdict.
+
+## Deploy Configuration
+
+- Platform: Vercel
+- Production URL: (Vercel 프로젝트 생성 후 기입)
+- Deploy workflow: auto-deploy on push to main
+- Health check: production URL
+- Pre-merge: `bun run verify`
+
+환경변수 (Vercel 대시보드에서 설정):
+- `ANTHROPIC_API_KEY` — Production + Preview 모두 설정 필수
+- `UPSTASH_REDIS_REST_URL` — Production만 (없으면 rate limiting 비활성화, 정상 동작)
+- `UPSTASH_REDIS_REST_TOKEN` — Production만
 
 ## Progress Tracking
 
