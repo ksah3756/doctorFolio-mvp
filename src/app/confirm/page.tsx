@@ -9,15 +9,19 @@ import styles from './page.module.css'
 
 export default function ConfirmPage() {
   const router = useRouter()
-  const [positions, setPositions] = useState<PortfolioPosition[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [positions, setPositions] = useState<PortfolioPosition[]>(() => {
+    if (typeof window === 'undefined') return []
+    const raw = sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS)
+    return raw ? (JSON.parse(raw) as PortfolioPosition[]) : []
+  })
+  const [loaded] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS) !== null
+  })
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS)
-    if (!raw) { router.replace('/'); return }
-    setPositions(JSON.parse(raw))
-    setLoaded(true)
-  }, [router])
+    if (!loaded) router.replace('/')
+  }, [loaded, router])
 
   const totalValue = positions.reduce((s, p) => s + p.value, 0)
 
