@@ -26,16 +26,16 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          DIFF=$(head -c 40000 /tmp/pr.diff)
-          PAYLOAD=$(jq -n --arg diff "$DIFF" '{
-            "contents": [{"parts": [{"text": ("You are a code reviewer for a Next.js 15 TypeScript app.\n\nReview this PR diff. Focus on:\n1. TypeScript safety (no any, proper types)\n2. React/Next.js App Router best practices\n3. Security issues in API routes\n4. Test coverage gaps\n5. Code clarity\n\nBe concise. Flag blockers vs suggestions.\n\nDiff:\n```\n" + $diff + "\n```")}]},
-            "generationConfig": {"maxOutputTokens": 1024}
-          }')
-          curl -sf -X POST \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$GEMINI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
-            | jq -r '.candidates[0].content.parts[0].text' > /tmp/review.md
+          python3 -c "
+          import json, urllib.request, os
+          diff = open('/tmp/pr.diff').read()[:40000]
+          prompt = 'You are a code reviewer for a Next.js 15 TypeScript app.\n\nReview this PR diff. Focus on:\n1. TypeScript safety (no any, proper types)\n2. React/Next.js App Router best practices\n3. Security issues in API routes\n4. Test coverage gaps\n5. Code clarity\n\nBe concise. Flag blockers vs suggestions.\n\nDiff:\n' + diff
+          payload = json.dumps({'contents': [{'parts': [{'text': prompt}]}], 'generationConfig': {'maxOutputTokens': 1024}}).encode()
+          req = urllib.request.Request('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + os.environ['GEMINI_API_KEY'], data=payload, headers={'Content-Type': 'application/json'})
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.loads(r.read())
+          open('/tmp/review.md', 'w').write(data['candidates'][0]['content']['parts'][0]['text'])
+          "
           cat /tmp/review.md
 
       - name: Post review comment
