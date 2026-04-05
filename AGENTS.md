@@ -11,37 +11,52 @@ For any non-trivial code change, follow this order:
 
 ## Agent Division of Labor
 
-### Claude (primary implementer)
-Claude owns the full implementation pipeline:
-1. planning
-2. implementation
-3. refactoring
-4. tests and verification
-5. self-review (1차)
+### Parallel Track Model
 
-After `pnpm verify` passes and self-review is done, Claude requests a Codex independent review.
+큰 작업은 **독립적인 서브태스크로 분해**한 뒤 두 트랙에 병렬 배분한다.
+핵심 제약: **두 트랙이 같은 파일을 동시에 수정하면 충돌 발생** → 분해 시 파일 단위 겹침 없게 나눠야 한다.
 
-Claude also owns:
-- Codex 피드백 반영 및 수정
-- PR 생성 / ship / merge
+```
+1. Task Decomposition (Claude)
+   └── 독립 서브태스크로 분리 (파일 겹침 없게)
+   └── Track A / Track B 배분
 
-### Codex (independent reviewer)
-Codex is used exclusively as a **second-opinion reviewer** after Claude completes implementation.
+Track A (Claude 구현)        Track B (Codex 구현)
+────────────────────         ────────────────────
+Claude 구현                  Codex 구현
+     ↓                            ↓
+Codex 리뷰                   Claude 리뷰
+(/codex review)                   ↓
+     ↓                       Claude 피드백 반영
+Claude 피드백 반영                  ↓
+     ↓                            ↓
+        merge → main (Claude git-manager)
+```
 
-Run via `/codex review` (pass/fail gate) or `/codex challenge` (adversarial — tries to break the code).
+### 병렬 실행 방법
 
-Codex must **not**:
-- implement features
-- make code changes
-- create PRs or commits
+- **git worktree 사용** — 두 트랙이 각자 독립 브랜치에서 작업 후 병합
+- **Codex 트랙 시작**: `/omc-teams 1:codex "Track B 구현 내용"` 으로 Codex 워커 실행
+- Claude는 Track A를 직접 구현하면서 Codex Track B와 병렬 진행
 
-Codex review output is handed back to Claude for triage and fixes.
+### 단일 트랙 (작은 작업)
 
-Required Codex review output:
-- Pass/fail gate verdict
-- P1 blockers (must fix before merge)
-- P2 suggestions (optional improvements)
-- Cross-model findings vs Claude's own review
+작업이 작거나 파일 분리가 불가능한 경우:
+
+```
+Claude 구현 → pnpm verify → /codex review → Claude 피드백 반영 → PR
+```
+
+### 역할 경계
+
+| 역할 | Claude | Codex |
+|------|--------|-------|
+| Task decomposition | ✅ 항상 | ✗ |
+| 구현 (Track A) | ✅ | ✗ |
+| 구현 (Track B) | ✗ | ✅ |
+| Track A 리뷰 | ✗ | ✅ (`/codex review`) |
+| Track B 리뷰 | ✅ | ✗ |
+| git-manager / PR | ✅ 항상 | ✗ |
 
 Definition of done:
 - `pnpm verify` passes
@@ -63,25 +78,33 @@ Rules:
 
 ## Role Lanes
 
-- **Planner:** writes the short plan, names files to inspect, and lists required test updates before code changes begin. Owner: **Claude**.
-- **Implementer:** makes the smallest viable code change that satisfies the plan and hands off without doing final review. Owner: **Claude**.
-- **Tester:** adds or updates tests, runs `pnpm verify`, and reports exact failures if verification breaks. Owner: **Claude**.
-- **Reviewer (1차):** performs self-review, flags obvious issues before Codex review. Owner: **Claude**.
-- **Reviewer (2차):** independent second-opinion review via `/codex review` or `/codex challenge`. Owner: **Codex**.
-- **Git Manager:** handles branch, staging, commit, push, and PR hygiene only after Codex review is clean. Owner: **Claude**.
+- **Decomposer:** 작업을 파일 겹침 없는 독립 서브태스크로 분리하고 Track A/B 배분. Owner: **Claude**.
+- **Implementer (Track A):** Claude가 구현. `pnpm verify` 통과 후 Codex 리뷰 요청. Owner: **Claude**.
+- **Implementer (Track B):** Codex가 구현. `pnpm verify` 통과 후 Claude 리뷰. Owner: **Codex**.
+- **Reviewer (Track A):** `/codex review` 또는 `/codex challenge`. Owner: **Codex**.
+- **Reviewer (Track B):** Claude가 Codex 구현물 검토. Owner: **Claude**.
+- **Git Manager:** 두 트랙 모두 리뷰 통과 후 병합 및 PR. Owner: **Claude**.
 
 ## Role Execution Order
 
-For any non-trivial change, route work through:
+**병렬 (큰 작업):**
 
-`planner → implementer → tester → reviewer(Claude) → reviewer(Codex) → git-manager`
+```
+Decomposer(Claude)
+    ├── Track A: Claude 구현 → pnpm verify → Codex 리뷰 → Claude 수정
+    └── Track B: Codex 구현 → pnpm verify → Claude 리뷰 → Codex 수정
+                    ↓ (양쪽 완료 후)
+              git-manager(Claude) → PR
+```
+
+**단일 (작은 작업):**
+
+`Claude 구현 → pnpm verify → /codex review → 수정 → git-manager`
 
 Additional rules:
-- Claude self-review comes before Codex review. Fix obvious issues first.
-- Codex review is required after Claude self-review and before git management.
-- If Codex finds P1 issues, return to implementer → tester → Claude self-review → Codex review again.
-- Use the role prompts in `prompts/` for these lanes when delegating.
-- `git-manager` lane is always Claude.
+- P1 발견 시 해당 트랙 구현자가 수정 후 재검토.
+- Track B Codex 구현은 `/omc-teams 1:codex "..."` 로 실행.
+- `git-manager` 는 항상 Claude.
 
 ## Role Prompt Files
 
