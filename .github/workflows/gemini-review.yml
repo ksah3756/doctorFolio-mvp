@@ -25,45 +25,17 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, os, sys
-
-          diff = open("/tmp/pr.diff").read()[:40000]  # ~40k chars 제한
-
-          prompt = f"""You are a code reviewer for a Next.js 15 TypeScript portfolio analysis app.
-
-Review this pull request diff. Focus on:
-1. TypeScript safety (no `any`, proper types)
-2. React/Next.js best practices (App Router patterns)
-3. Security issues in API routes (input validation, injection risks)
-4. Test coverage gaps for new logic
-5. Code clarity and single responsibility
-
-Be concise. Use bullet points. Flag blockers (must fix) vs suggestions (optional).
-
-Diff:
-```
-{diff}
-```"""
-
-          payload = json.dumps({
-            "contents": [{"parts": [{"text": prompt}]}],
+          DIFF=$(head -c 40000 /tmp/pr.diff)
+          PAYLOAD=$(jq -n --arg diff "$DIFF" '{
+            "contents": [{"parts": [{"text": ("You are a code reviewer for a Next.js 15 TypeScript app.\n\nReview this PR diff. Focus on:\n1. TypeScript safety (no any, proper types)\n2. React/Next.js App Router best practices\n3. Security issues in API routes\n4. Test coverage gaps\n5. Code clarity\n\nBe concise. Flag blockers vs suggestions.\n\nDiff:\n```\n" + $diff + "\n```")}]},
             "generationConfig": {"maxOutputTokens": 1024}
-          }).encode()
-
-          req = urllib.request.Request(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.environ['GEMINI_API_KEY']}",
-            data=payload,
-            headers={"Content-Type": "application/json"}
-          )
-
-          with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read())
-
-          review = data["candidates"][0]["content"]["parts"][0]["text"]
-          open("/tmp/review.md", "w").write(review)
-          print(review)
-          PYEOF
+          }')
+          curl -sf -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$GEMINI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            | jq -r '.candidates[0].content.parts[0].text' > /tmp/review.md
+          cat /tmp/review.md
 
       - name: Post review comment
         uses: actions/github-script@v7
@@ -71,7 +43,6 @@ Diff:
           script: |
             const fs = require('fs');
             const review = fs.readFileSync('/tmp/review.md', 'utf8');
-
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
