@@ -1,7 +1,7 @@
 // src/app/api/ocr/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { autoClassify } from '@/lib/sectors'
+import { normalizeOcrItems, parseOcrResponse } from '@/lib/ocr'
 import type { PortfolioPosition } from '@/lib/types'
 
 const client = new Anthropic()
@@ -21,14 +21,6 @@ const PROMPT = `다음 증권사 MTS 보유 종목 화면에서 모든 보유 �
 - JSON 배열만 반환, 다른 텍스트 없음
 
 형식: [{"name":"삼성전자","code":"005930","qty":50,"value":2000000,"avgCost":38000}]`
-
-type OcrRaw = {
-  name: string
-  code: string | null
-  qty: number | null
-  value: number | null
-  avgCost: number | null
-}
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -62,33 +54,8 @@ export async function POST(req: NextRequest) {
     })
 
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    const match = text.match(/\[[\s\S]*\]/)
-    if (!match) continue
-
-    const rawItems: OcrRaw[] = JSON.parse(match[0])
-
-    for (const raw of rawItems) {
-      if (!raw.name || !raw.value) continue  // name, value 없으면 스킵
-
-      const qty = raw.qty ?? 1
-      const value = raw.value
-      const avgCost = raw.avgCost ?? value / qty
-      const currentPrice = value / qty
-      const { sector, assetClass } = autoClassify(raw.name, raw.code)
-
-      allPositions.push({
-        id: crypto.randomUUID(),
-        name: raw.name,
-        code: raw.code,
-        qty,
-        value,
-        avgCost,
-        currentPrice,
-        assetClass,
-        sector,
-        sourceImage: i + 1,
-      })
-    }
+    const rawItems = parseOcrResponse(text)
+    allPositions.push(...normalizeOcrItems(rawItems, i + 1))
   }
 
   return NextResponse.json(allPositions)
