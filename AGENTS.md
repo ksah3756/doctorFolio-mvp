@@ -123,6 +123,8 @@ omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verif
 **규칙:**
 - YAML `status` + `## Verdict` 는 Claude만 작성
 - Codex는 `## Codex Response` 섹션만 추가
+- 다만 이슈 라벨/트랙 배정상 Codex가 리뷰 담당이면, 채팅만으로 끝내지 말고 Claude 리뷰와 동일한 `REVIEW-N.md` 형식으로 리뷰 결과를 남긴다.
+- 이 경우 Codex 리뷰도 worktree 루트의 `REVIEW-N.md`가 공식 기록이다.
 - 3사이클 후에도 P1 남으면 `status: ESCALATED` → 유저에게 에스컬레이션
 - `REVIEW*.md`는 `.gitignore` 적용 (PR diff에 포함되지 않음)
 
