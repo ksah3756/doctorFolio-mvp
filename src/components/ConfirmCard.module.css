@@ -129,6 +129,53 @@
   white-space: nowrap;
 }
 
+/* 768px+ 테이블 로우 */
+.tr { border-bottom: 1px solid var(--border); }
+.tr:last-child { border-bottom: none; }
+.trDup { background: var(--amber-bg); }
+
+.tdName {
+  padding: 12px 16px 12px 0;
+  min-width: 120px;
+}
+.td { padding: 12px 12px 12px 0; vertical-align: middle; }
+.tdNum { padding: 12px 12px 12px 0; vertical-align: middle; font-variant-numeric: tabular-nums; }
+.tdPct { color: var(--text-2); font-size: 13px; white-space: nowrap; }
+.tdAction { padding: 12px 0; vertical-align: middle; }
+.tdNameInner { display: flex; align-items: center; gap: 6px; }
+
+.tdInput {
+  width: 100%;
+  min-width: 70px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font);
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  color: var(--text-1);
+  outline: none;
+}
+.tdInput:focus { border-bottom-color: var(--primary); }
+
+.selectSm {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 22px 5px 7px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  color: var(--text-1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+}
+.sectorSm { font-size: 12px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+
 /* 상세보기 토글 */
 .toggle {
   width: 100%;

@@ -10,6 +10,7 @@ interface Props {
   position: PortfolioPosition
   pct: number               // 전체 포트폴리오 중 비중 (%)
   isDuplicate: boolean
+  asRow?: boolean           // 768px+ 테이블 뷰용
   onDelete: (id: string) => void
   onAssetClassChange: (id: string, assetClass: AssetClass) => void
   onFieldChange: (id: string, field: EditableField, value: number) => void
@@ -17,7 +18,7 @@ interface Props {
 
 const ASSET_CLASSES: AssetClass[] = ['국내주식', '해외주식', '채권', '기타']
 
-export function ConfirmCard({ position, pct, isDuplicate, onDelete, onAssetClassChange, onFieldChange }: Props) {
+export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAssetClassChange, onFieldChange }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [editValues, setEditValues] = useState({
     value: String(Math.round(position.value)),
@@ -42,6 +43,46 @@ export function ConfirmCard({ position, pct, isDuplicate, onDelete, onAssetClass
       setEditValues(prev => ({ ...prev, [field]: String(Math.round(position[field])) }))
       e.currentTarget.blur()
     }
+  }
+
+  if (asRow) {
+    return (
+      <tr className={`${styles.tr} ${isDuplicate ? styles.trDup : ''}`}>
+        <td className={styles.tdName}>
+          <span className={styles.name}>{position.name}</span>
+          {isDuplicate && <span className={styles.dupBadge} aria-label="같은 종목이 여러 줄 있습니다">⚠ 중복</span>}
+        </td>
+        <td className={styles.td}>
+          <select className={styles.selectSm} value={position.assetClass}
+            onChange={e => onAssetClassChange(position.id, e.target.value as AssetClass)}>
+            {ASSET_CLASSES.map(ac => <option key={ac} value={ac}>{ac}</option>)}
+          </select>
+        </td>
+        <td className={styles.td}><span className={styles.sectorSm}>{position.sector}</span></td>
+        <td className={styles.tdNum}>
+          <input className={styles.tdInput} inputMode="numeric" value={editValues.value}
+            onChange={e => setEditValues(prev => ({ ...prev, value: e.target.value }))}
+            onBlur={() => handleBlur('value')} onKeyDown={e => handleKeyDown(e, 'value')}
+            aria-label="보유금액 수정" />
+        </td>
+        <td className={`${styles.tdNum} ${styles.tdPct}`}>{pct.toFixed(1)}%</td>
+        <td className={styles.tdNum}>
+          <input className={`${styles.tdInput} ${styles.secondary}`} inputMode="numeric" value={editValues.avgCost}
+            onChange={e => setEditValues(prev => ({ ...prev, avgCost: e.target.value }))}
+            onBlur={() => handleBlur('avgCost')} onKeyDown={e => handleKeyDown(e, 'avgCost')}
+            aria-label="매입가 수정" />
+        </td>
+        <td className={styles.tdNum}>
+          <input className={`${styles.tdInput} ${styles.secondary}`} inputMode="numeric" value={editValues.currentPrice}
+            onChange={e => setEditValues(prev => ({ ...prev, currentPrice: e.target.value }))}
+            onBlur={() => handleBlur('currentPrice')} onKeyDown={e => handleKeyDown(e, 'currentPrice')}
+            aria-label="현재가 수정" />
+        </td>
+        <td className={styles.tdAction}>
+          <button className={styles.deleteBtn} onClick={() => onDelete(position.id)} aria-label={`${position.name} 삭제`}>✕</button>
+        </td>
+      </tr>
+    )
   }
 
   return (

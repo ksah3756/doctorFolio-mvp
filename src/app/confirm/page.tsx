@@ -64,6 +64,39 @@ export default function ConfirmPage() {
         <p className={styles.hint}>자산군을 확인하고, 금액이 잘못 인식됐으면 눌러서 수정하세요.</p>
       </div>
 
+      {/* 768px+ 테이블 뷰 */}
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr className={styles.thead}>
+              <th className={styles.th}>종목명</th>
+              <th className={styles.th}>자산군</th>
+              <th className={styles.th}>섹터</th>
+              <th className={`${styles.th} ${styles.thNum}`}>보유금액</th>
+              <th className={`${styles.th} ${styles.thNum}`}>비중</th>
+              <th className={`${styles.th} ${styles.thNum}`}>매입가</th>
+              <th className={`${styles.th} ${styles.thNum}`}>현재가</th>
+              <th className={styles.th}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {positions.map(p => (
+              <ConfirmCard
+                key={p.id}
+                asRow
+                position={p}
+                pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
+                isDuplicate={(nameCounts[p.name] ?? 0) > 1}
+                onDelete={handleDelete}
+                onAssetClassChange={handleAssetClassChange}
+                onFieldChange={handleFieldChange}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 모바일 카드 뷰 */}
       <div className={styles.scroll}>
         {positions.map(p => (
           <ConfirmCard
