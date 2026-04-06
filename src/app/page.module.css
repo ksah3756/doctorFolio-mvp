@@ -52,6 +52,13 @@
 .zoneTitle { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
 .zoneDesc { font-size: 13px; color: var(--text-2); line-height: 1.55; }
 
+.privacy {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
 .manual { font-size: 13px; color: var(--text-3); }
 .manual a { color: var(--text-2); text-decoration: underline; }
 
