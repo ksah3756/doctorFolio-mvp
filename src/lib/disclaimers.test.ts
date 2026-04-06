@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DIAGNOSIS_DISCLAIMER_LINES } from './diagnosis'
+import { DIAGNOSIS_DISCLAIMER_LINES } from './disclaimers'
 
 describe('DIAGNOSIS_DISCLAIMER_LINES', () => {
   it('contains the required disclaimer and pricing notice copy', () => {
