@@ -6,7 +6,8 @@ import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
 import { ActionItem } from '@/components/ActionItem'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
-import { SESSION_KEYS, DEFAULT_TARGET } from '@/lib/types'
+import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
+import { SESSION_KEYS } from '@/lib/types'
 import type { DiagnosisResult } from '@/lib/types'
 import styles from './page.module.css'
 
@@ -52,6 +53,7 @@ export default function DiagnosisPage() {
   const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
   const isHealthy = diagnosis.problems.length === 0
   const target = diagnosis.targetAllocation
+  const targetErrorMessage = getTargetAllocationErrorMessage(target)
 
   return (
     <div className={styles.wrap}>
@@ -71,6 +73,11 @@ export default function DiagnosisPage() {
           </>
         )}
         <AllocationBar current={diagnosis.currentAllocation} target={target} />
+        {targetErrorMessage && (
+          <p className={styles.targetError} role="alert">
+            {targetErrorMessage}
+          </p>
+        )}
       </div>
 
       <div className={styles.body}>

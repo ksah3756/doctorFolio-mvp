@@ -21,6 +21,12 @@
 }
 .bigNum em { font-style: normal; font-size: 18px; font-weight: 700; color: rgba(255,255,255,.7); vertical-align: middle; }
 .subline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 20px; }
+.targetError {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffb4b4;
+}
 
 /* 양호 상태 */
 .healthy { margin-bottom: 20px; }
