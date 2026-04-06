@@ -140,6 +140,8 @@ export default function UploadPage() {
           onChange={e => e.target.files && handleFiles(e.target.files)}
         />
 
+        <p className={styles.privacy}>🔒 업로드한 이미지는 분석 후 즉시 삭제되며 서버에 저장되지 않습니다.</p>
+
         {error && <p className={styles.error}>⚠️ {error} — <a href="#" onClick={() => setError(null)}>다시 시도</a></p>}
 
         <p className={styles.manual}>또는 <a href="#">종목을 직접 입력하기</a></p>

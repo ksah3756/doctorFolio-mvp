@@ -72,6 +72,60 @@ git branch -d feat/N-slug
 gh issue close N
 ```
 
+### 병렬 트랙 시작
+
+이슈를 파일 겹침 없는 쌍으로 고른다 (`track:claude` / `track:codex` 라벨 확인).
+
+```bash
+# Claude 트랙: 현재 디렉터리에서 작업 후 pnpm verify
+# Codex 트랙:
+cd ../worktrees/feat-N-slug
+omc team 1:codex "<이슈 제목 + 수용 기준 전문>"
+```
+
+양쪽 완료 후 cross-review:
+- Claude → Codex 워크트리 리뷰
+- Codex → Claude 워크트리 `/codex review`
+
+P1 없으면 Git Manager(Claude)가 각각 PR 생성 및 순차 머지.
+
+### Review Handoff (REVIEW-N.md 컨벤션)
+
+**완료 신호:** `pnpm verify` 통과 → `git commit` → Claude가 `git log main..HEAD`로 감지
+
+**Claude 리뷰 작성 형식** (`REVIEW-1.md` → `REVIEW-2.md` 순서로 워크트리 루트에 작성):
+```
+---
+cycle: 1
+branch: feat/N-slug
+status: NEEDS_REVISION  # NEEDS_REVISION | APPROVED | ESCALATED
+p1_count: 2
+p2_count: 1
+---
+
+## P1 (must fix)
+- [ ] ...
+
+## P2 (optional)
+- [ ] ...
+
+## Codex Response
+<!-- Codex가 P1 수정 후 이 섹션 채움 -->
+
+## Verdict: REVISE
+```
+
+**Codex 재구현 트리거 (유저가 실행):**
+```bash
+omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verify. If verify fails append failure output under '## Codex Response' and note VERIFY_FAILED — do not commit. If passes, append what you fixed then commit."
+```
+
+**규칙:**
+- YAML `status` + `## Verdict` 는 Claude만 작성
+- Codex는 `## Codex Response` 섹션만 추가
+- 3사이클 후에도 P1 남으면 `status: ESCALATED` → 유저에게 에스컬레이션
+- `REVIEW*.md`는 `.gitignore` 적용 (PR diff에 포함되지 않음)
+
 ### 파일 충돌 방지
 
 이슈 생성 시 수정 대상 파일을 명시한다. 동시 진행 중인 이슈가 같은 파일을 수정하면 하나가 머지될 때까지 대기.
