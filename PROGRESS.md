@@ -15,3 +15,7 @@
 - [x] Vitest 단위 테스트 9개 추가 (`ocr.test.ts`, `explain.test.ts`, `sectors.test.ts`)
 - [x] OCR 응답 파싱을 malformed JSON/비정상 수량에 대해 방어적으로 보강
 - [x] Vitest 회귀 테스트 2개 추가 (`ocr.test.ts`)
+
+## 2026-04-06
+- [ ] OCR 실패 시 빈 500 대신 원인별 오류 메시지를 반환하도록 보강
+- [ ] OCR 필드 매핑을 평가금액·매입가·현재가 기준으로 재정렬
