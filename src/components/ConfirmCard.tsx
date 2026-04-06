@@ -4,20 +4,45 @@ import { useState } from 'react'
 import type { PortfolioPosition, AssetClass } from '@/lib/types'
 import styles from './ConfirmCard.module.css'
 
+type EditableField = 'value' | 'avgCost' | 'currentPrice'
+
 interface Props {
   position: PortfolioPosition
   pct: number               // 전체 포트폴리오 중 비중 (%)
   isDuplicate: boolean
   onDelete: (id: string) => void
   onAssetClassChange: (id: string, assetClass: AssetClass) => void
+  onFieldChange: (id: string, field: EditableField, value: number) => void
 }
 
 const ASSET_CLASSES: AssetClass[] = ['국내주식', '해외주식', '채권', '기타']
 
-export function ConfirmCard({ position, pct, isDuplicate, onDelete, onAssetClassChange }: Props) {
+export function ConfirmCard({ position, pct, isDuplicate, onDelete, onAssetClassChange, onFieldChange }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [editValues, setEditValues] = useState({
+    value: String(Math.round(position.value)),
+    avgCost: String(Math.round(position.avgCost)),
+    currentPrice: String(Math.round(position.currentPrice)),
+  })
 
   const fmt = (n: number) => Math.round(n).toLocaleString('ko-KR')
+
+  function handleBlur(field: EditableField) {
+    const parsed = parseInt(editValues[field].replace(/,/g, ''), 10)
+    if (!isNaN(parsed) && parsed >= 0) {
+      onFieldChange(position.id, field, parsed)
+    } else {
+      setEditValues(prev => ({ ...prev, [field]: String(Math.round(position[field])) }))
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>, field: EditableField) {
+    if (e.key === 'Enter') e.currentTarget.blur()
+    if (e.key === 'Escape') {
+      setEditValues(prev => ({ ...prev, [field]: String(Math.round(position[field])) }))
+      e.currentTarget.blur()
+    }
+  }
 
   return (
     <div className={styles.card}>
@@ -45,19 +70,43 @@ export function ConfirmCard({ position, pct, isDuplicate, onDelete, onAssetClass
         <div className={styles.grid}>
           <div className={styles.cell}>
             <div className={styles.cellLabel}>보유금액</div>
-            <div className={styles.cellVal}>{fmt(position.value)}</div>
+            <input
+              className={styles.cellInput}
+              inputMode="numeric"
+              value={editValues.value}
+              onChange={e => setEditValues(prev => ({ ...prev, value: e.target.value }))}
+              onBlur={() => handleBlur('value')}
+              onKeyDown={e => handleKeyDown(e, 'value')}
+              aria-label="보유금액 수정"
+            />
           </div>
           <div className={styles.cell}>
             <div className={styles.cellLabel}>비중</div>
             <div className={styles.cellVal}>{pct.toFixed(1)}%</div>
           </div>
           <div className={styles.cell}>
-            <div className={styles.cellLabel}>평균단가</div>
-            <div className={`${styles.cellVal} ${styles.secondary}`}>{fmt(position.avgCost)}</div>
+            <div className={styles.cellLabel}>매입가</div>
+            <input
+              className={`${styles.cellInput} ${styles.secondary}`}
+              inputMode="numeric"
+              value={editValues.avgCost}
+              onChange={e => setEditValues(prev => ({ ...prev, avgCost: e.target.value }))}
+              onBlur={() => handleBlur('avgCost')}
+              onKeyDown={e => handleKeyDown(e, 'avgCost')}
+              aria-label="매입가 수정"
+            />
           </div>
           <div className={styles.cell}>
             <div className={styles.cellLabel}>현재가</div>
-            <div className={`${styles.cellVal} ${styles.secondary}`}>{fmt(position.currentPrice)}</div>
+            <input
+              className={`${styles.cellInput} ${styles.secondary}`}
+              inputMode="numeric"
+              value={editValues.currentPrice}
+              onChange={e => setEditValues(prev => ({ ...prev, currentPrice: e.target.value }))}
+              onBlur={() => handleBlur('currentPrice')}
+              onKeyDown={e => handleKeyDown(e, 'currentPrice')}
+              aria-label="현재가 수정"
+            />
           </div>
         </div>
 

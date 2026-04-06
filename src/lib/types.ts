@@ -7,9 +7,9 @@ export interface PortfolioPosition {
   name: string          // 종목명
   code: string | null   // 종목코드 (6자리 숫자 or "AAPL"), OCR 못 찾으면 null
   qty: number           // 보유수량
-  value: number         // 보유금액 (원)
-  avgCost: number       // 평균단가 (원)
-  currentPrice: number  // 현재가 = value / qty (역산)
+  value: number         // 평가금액/보유금액 총액 (원)
+  avgCost: number       // 매입가/평균단가 (1주당 원가)
+  currentPrice: number  // 현재가 (1주당), OCR 직파싱 후 필요 시 보정
   assetClass: AssetClass
   sector: string        // "반도체", "자동차", "채권 ETF" 등
   sourceImage: number   // 어느 이미지에서 추출됐는지 (1-based)

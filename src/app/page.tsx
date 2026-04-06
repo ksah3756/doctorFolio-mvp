@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SESSION_KEYS } from '@/lib/types'
+import { parseOcrErrorResponse } from '@/lib/ocr'
 import styles from './page.module.css'
 
 type LoadingStep = { name: string; done: boolean; active: boolean }
@@ -52,8 +53,7 @@ export default function UploadPage() {
     try {
       const res = await fetch('/api/ocr', { method: 'POST', body: formData })
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? '인식 실패')
+        throw new Error(parseOcrErrorResponse(await res.text()))
       }
       const positions = await res.json()
 
