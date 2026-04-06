@@ -114,6 +114,80 @@ Additional rules:
 - `prompts/reviewer.md`
 - `prompts/git-manager.md`
 
+## Work Unit & Worktree Workflow
+
+구현을 시작하기 전에 작업 단위를 GitHub Issue로 정의하고, 이슈별 브랜치와 worktree를 만들어 병렬 작업한다.
+
+### Source of Truth
+
+**GitHub Issues = 작업 백로그의 단일 진실 공급원.**
+모든 작업은 이슈로 먼저 등록한 뒤 구현을 시작한다.
+
+### 새 작업 시작 절차
+
+```bash
+# 1. 이슈 생성
+gh issue create \
+  --title "OCR 로딩 애니메이션" \
+  --body "수용 기준:\n- 종목명 하나씩 순서대로 등장\n- 처리 중/완료 상태 표시"
+# → Issue #5 생성됨
+
+# 2. 브랜치 + worktree 생성
+git fetch origin main
+git branch feat/5-ocr-loading origin/main
+git worktree add ../worktrees/feat-5-ocr-loading feat/5-ocr-loading
+
+# 3. 해당 worktree에서 작업
+cd ../worktrees/feat-5-ocr-loading
+```
+
+### 네이밍 컨벤션
+
+| 종류 | 패턴 | 예시 |
+|------|------|------|
+| 기능 | `feat/<issue>-<slug>` | `feat/5-ocr-loading` |
+| 버그 | `fix/<issue>-<slug>` | `fix/12-gemini-429` |
+| 리팩토링 | `refactor/<issue>-<slug>` | `refactor/8-ocr-parser` |
+| 작업 디렉토리 | `../worktrees/<branch>` | `../worktrees/feat-5-ocr-loading` |
+
+### 활성 작업 확인
+
+```bash
+gh issue list              # 전체 백로그 (열린 이슈)
+git worktree list          # 현재 활성 worktree 목록
+```
+
+### PR 머지 후 정리
+
+```bash
+# PR 머지 확인 후
+git worktree remove ../worktrees/feat-5-ocr-loading
+git branch -d feat/5-ocr-loading
+gh issue close 5
+```
+
+### 병렬 작업 시 파일 충돌 방지
+
+이슈를 만들 때 **수정 대상 파일**을 명시한다. 동시에 진행 중인 이슈가 같은 파일을 건드리면 하나가 먼저 머지될 때까지 다른 이슈를 대기시킨다.
+
+```
+이슈 #5 (OCR 로딩): src/app/page.tsx, page.module.css
+이슈 #6 (confirm 반응형): src/components/ConfirmCard.tsx, ConfirmCard.module.css
+→ 파일 겹침 없음 → 병렬 진행 가능 ✅
+
+이슈 #5 (OCR 로딩): src/app/page.tsx
+이슈 #7 (수동 입력): src/app/page.tsx
+→ 같은 파일 → 하나씩 순차 진행 ⚠️
+```
+
+### Claude + Codex 병렬 트랙 연결
+
+```
+이슈 #5 → worktree-A → Claude 구현 → Codex 리뷰 → PR
+이슈 #6 → worktree-B → Codex 구현 → Claude 리뷰 → PR
+(동시 진행, 각자 독립 worktree)
+```
+
 ## Tech Stack
 
 - **Framework:** Next.js 15+ (App Router)
