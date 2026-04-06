@@ -37,6 +37,10 @@ export default function ConfirmPage() {
     setPositions(prev => prev.map(p => p.id === id ? { ...p, assetClass } : p))
   }
 
+  function handleFieldChange(id: string, field: 'value' | 'avgCost' | 'currentPrice', value: number) {
+    setPositions(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
+  }
+
   function handleStart() {
     sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(positions))
     sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(DEFAULT_TARGET))
@@ -57,7 +61,7 @@ export default function ConfirmPage() {
           <span className={styles.title}>이렇게 인식했어요</span>
           <span className={styles.count}>{positions.length}종목</span>
         </div>
-        <p className={styles.hint}>자산군만 확인해주세요. 나머지는 수정 안 해도 됩니다.</p>
+        <p className={styles.hint}>자산군을 확인하고, 금액이 잘못 인식됐으면 눌러서 수정하세요.</p>
       </div>
 
       <div className={styles.scroll}>
@@ -69,6 +73,7 @@ export default function ConfirmPage() {
             isDuplicate={(nameCounts[p.name] ?? 0) > 1}
             onDelete={handleDelete}
             onAssetClassChange={handleAssetClassChange}
+            onFieldChange={handleFieldChange}
           />
         ))}
 
