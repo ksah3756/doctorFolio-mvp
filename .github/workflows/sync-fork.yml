@@ -27,12 +27,23 @@ jobs:
             exit 1
           fi
 
+      - name: Create mirror output
+        run: |
+          mkdir output
+          rsync -a ./ output/ \
+            --exclude output \
+            --exclude .git \
+            --exclude .vercel \
+            --exclude node_modules \
+            --exclude .next \
+            --exclude 'REVIEW*.md'
+
       - name: Push main to personal fork
         uses: cpina/github-action-push-to-another-repository@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.FORK_PUSH_TOKEN }}
         with:
-          source-directory: '.'
+          source-directory: output
           destination-github-username: ksah3756
           destination-repository-name: doctorFolio-mvp
           user-email: github-actions[bot]@users.noreply.github.com
