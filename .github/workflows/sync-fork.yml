@@ -18,21 +18,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push main to personal fork
+      - name: Validate fork push token
         env:
           FORK_PUSH_TOKEN: ${{ secrets.FORK_PUSH_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
           if [ -z "$FORK_PUSH_TOKEN" ]; then
             echo "FORK_PUSH_TOKEN is required to push to the Vercel mirror fork." >&2
             exit 1
           fi
 
-          git config --global credential.helper store
-          printf 'https://ksah3756:%s@github.com\n' "$FORK_PUSH_TOKEN" > ~/.git-credentials
-
-          git remote add fork "https://github.com/ksah3756/doctorFolio-mvp.git"
-          git push --force fork HEAD:main
+      - name: Push main to personal fork
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.FORK_PUSH_TOKEN }}
+        with:
+          source-directory: '.'
+          destination-github-username: ksah3756
+          destination-repository-name: doctorFolio-mvp
+          user-email: github-actions[bot]@users.noreply.github.com
+          commit-message: ${{ github.event.head_commit.message || 'Sync from doctorFolio/doctorFolio-mvp' }}
+          target-branch: main
