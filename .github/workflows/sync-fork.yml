@@ -28,4 +28,4 @@ jobs:
           fi
 
           git remote add fork "https://x-access-token:${FORK_PUSH_TOKEN}@github.com/ksah3756/doctorFolio-mvp.git"
-          git push --force-with-lease fork HEAD:main
+          git push --force fork HEAD:main
