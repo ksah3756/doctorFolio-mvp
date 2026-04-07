@@ -21,11 +21,18 @@ jobs:
       - name: Push main to personal fork
         env:
           FORK_PUSH_TOKEN: ${{ secrets.FORK_PUSH_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
           if [ -z "$FORK_PUSH_TOKEN" ]; then
             echo "FORK_PUSH_TOKEN is required to push to the Vercel mirror fork." >&2
             exit 1
           fi
 
-          git remote add fork "https://x-access-token:${FORK_PUSH_TOKEN}@github.com/ksah3756/doctorFolio-mvp.git"
+          git config --global credential.helper store
+          printf 'https://ksah3756:%s@github.com\n' "$FORK_PUSH_TOKEN" > ~/.git-credentials
+
+          git remote add fork "https://github.com/ksah3756/doctorFolio-mvp.git"
           git push --force fork HEAD:main
