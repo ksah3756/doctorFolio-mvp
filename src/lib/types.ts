@@ -66,4 +66,13 @@ export const SESSION_KEYS = {
   CONFIRMED: 'pd_confirmed_positions', // 확인 완료 (PortfolioPosition[])
   TARGET: 'pd_target',                 // TargetAllocation
   DIAGNOSIS: 'pd_diagnosis',           // DiagnosisResult
+  INVESTOR_PROFILE: 'pd_investor_profile', // InvestorProfile
 } as const
+
+// 투자 성향 위저드
+export type StyleKey = 'stable' | 'balanced' | 'growth' | 'aggressive'
+
+export interface InvestorProfile {
+  currentStyle: StyleKey  // OCR 포트폴리오에서 추론
+  desiredStyle: StyleKey  // 유저가 프리셋 카드로 선택
+}
