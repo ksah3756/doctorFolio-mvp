@@ -95,18 +95,17 @@ export default function ConfirmPage() {
   const [cashInput, setCashInput] = useState(() => readStoredCash())
 
   const cashAmount = parseCashAmount(cashInput)
-  const cashPosition = cashAmount > 0 ? createCashPosition(cashAmount) : null
-  const displayedPositions = cashPosition ? [...positions, cashPosition] : positions
+  const diagnosisPositions = cashAmount > 0 ? [...positions, createCashPosition(cashAmount)] : positions
 
   useEffect(() => {
     if (!loaded) router.replace('/')
   }, [loaded, router])
 
-  const totalValue = displayedPositions.reduce((sum, position) => sum + position.value, 0)
+  const totalValue = positions.reduce((sum, position) => sum + position.value, 0)
 
   // 중복 티커 감지
   const nameCounts: Record<string, number> = {}
-  for (const position of displayedPositions) {
+  for (const position of positions) {
     nameCounts[position.name] = (nameCounts[position.name] ?? 0) + 1
   }
 
@@ -125,17 +124,7 @@ export default function ConfirmPage() {
     persistCashInput(digits)
   }
 
-  function clearCash() {
-    setCashInput('')
-    persistCashInput('')
-  }
-
   function handleDelete(id: string) {
-    if (id === CASH_POSITION_ID) {
-      clearCash()
-      return
-    }
-
     setPositions(prev => prev.filter(p => p.id !== id))
   }
 
@@ -156,11 +145,6 @@ export default function ConfirmPage() {
   }
 
   function handleFieldChange(id: string, field: 'value' | 'avgCost' | 'currentPrice', value: number) {
-    if (id === CASH_POSITION_ID) {
-      if (field === 'value') handleCashChange(String(value))
-      return
-    }
-
     setPositions(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
   }
 
@@ -169,9 +153,9 @@ export default function ConfirmPage() {
   }
 
   function handleStart() {
-    sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(displayedPositions))
+    sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(diagnosisPositions))
     sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(target))
-    const diagnosis = runDiagnosis(displayedPositions, target)
+    const diagnosis = runDiagnosis(diagnosisPositions, target)
     sessionStorage.setItem(SESSION_KEYS.DIAGNOSIS, JSON.stringify(diagnosis))
     router.push('/diagnosis')
   }
@@ -181,6 +165,7 @@ export default function ConfirmPage() {
   const hasDuplicates = Object.values(nameCounts).some(c => c > 1)
   const targetSum = TARGET_FIELDS.reduce((sum, assetClass) => sum + target[assetClass], 0)
   const isTargetBalanced = targetSum === 100
+  const hasPositions = positions.length > 0
 
   return (
     <div className={styles.wrap}>
@@ -188,31 +173,10 @@ export default function ConfirmPage() {
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <span className={styles.title}>이렇게 인식했어요</span>
-          <span className={styles.count}>{displayedPositions.length}종목</span>
+          <span className={styles.count}>{positions.length}종목</span>
         </div>
         <p className={styles.hint}>자산군을 확인하고, 금액이 잘못 인식됐으면 눌러서 수정하세요.</p>
       </div>
-
-      <section className={styles.cashSection}>
-        <div className={styles.cashHeader}>
-          <h2 className={styles.cashTitle}>보유 현금</h2>
-          <p className={styles.cashHint}>진단에 포함할 현금이 있으면 직접 입력하세요.</p>
-        </div>
-        <label className={styles.cashInputWrap}>
-          <span className={styles.cashLabel}>보유 현금</span>
-          <div className={styles.cashInputRow}>
-            <input
-              className={styles.cashInput}
-              inputMode="numeric"
-              value={cashInput}
-              onChange={e => handleCashChange(e.target.value)}
-              placeholder="0"
-              aria-label="보유 현금 입력"
-            />
-            <span className={styles.cashUnit}>원</span>
-          </div>
-        </label>
-      </section>
 
       {isDesktop ? (
         /* 768px+ 테이블 뷰 */
@@ -231,9 +195,9 @@ export default function ConfirmPage() {
               </tr>
             </thead>
             <tbody>
-              {displayedPositions.map(p => (
+              {positions.map(p => (
                 <ConfirmCard
-                  key={p.id === CASH_POSITION_ID ? `${p.id}-${p.value}` : p.id}
+                  key={p.id}
                   asRow
                   position={p}
                   pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
@@ -250,9 +214,9 @@ export default function ConfirmPage() {
       ) : (
         /* 모바일 카드 뷰 */
         <div className={styles.scroll}>
-          {displayedPositions.map(p => (
+          {positions.map(p => (
             <ConfirmCard
-              key={p.id === CASH_POSITION_ID ? `${p.id}-${p.value}` : p.id}
+              key={p.id}
               position={p}
               pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
               isDuplicate={(nameCounts[p.name] ?? 0) > 1}
@@ -270,7 +234,7 @@ export default function ConfirmPage() {
           </div>
         )}
 
-        {displayedPositions.length === 0 && (
+        {positions.length === 0 && (
           <div className={styles.empty}>
             <p>인식된 종목이 없습니다.</p>
             <p>주식잔고 화면을 캡처했는지 확인해주세요.</p>
@@ -282,7 +246,35 @@ export default function ConfirmPage() {
       </div>
       )}
 
-      {displayedPositions.length > 0 && (
+      {hasPositions && (
+        <section className={styles.cashSection}>
+          <label className={styles.cashInputWrap}>
+            <span className={styles.cashLabel}>보유 현금 (선택)</span>
+            <span className={styles.cashHint}>진단에 함께 반영할 현금이 있으면 입력하세요.</span>
+            <div className={styles.cashInputRow}>
+              <input
+                className={styles.cashInput}
+                inputMode="numeric"
+                value={cashInput}
+                onChange={e => handleCashChange(e.target.value)}
+                placeholder="0"
+                aria-label="보유 현금 (선택)"
+              />
+              <span className={styles.cashUnit}>원</span>
+            </div>
+          </label>
+        </section>
+      )}
+
+      {hasPositions && (
+        <div className={styles.partDivider}>
+          <hr className={styles.partDividerLine} />
+          <span className={styles.partDividerLabel}>지금 가진 것 → 앞으로 원하는 것</span>
+          <hr className={styles.partDividerLine} />
+        </div>
+      )}
+
+      {hasPositions && (
         <section className={styles.targetSection}>
           <div className={styles.targetHeader}>
             <h2 className={styles.targetTitle}>목표 배분 조정</h2>
@@ -323,7 +315,7 @@ export default function ConfirmPage() {
         </section>
       )}
 
-      {displayedPositions.length > 0 && (
+      {hasPositions && (
         <div className="fixed-cta">
           <button className="btn-primary" onClick={handleStart}>진단 시작</button>
         </div>

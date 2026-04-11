@@ -17,11 +17,12 @@ Rules:
 | Role | Owner | Description |
 |------|-------|-------------|
 | Planner | Claude | 이슈 생성 및 수용 기준 작성 |
-| Implementer | Codex | 구현 → `pnpm verify` → `discord-review-notify`로 완료+Claude 리뷰 요청 |
+| Implementer | Codex | 구현 → `pnpm verify` → 커밋 → `discord-review-notify`로 완료+Claude 리뷰 요청 |
 | Reviewer | Claude | Codex 구현물 검토 → REVIEW-N.md 작성 → P1 있으면 Codex 재트리거 |
 | Git Manager | Claude | APPROVED 후 PR 생성 및 머지 |
 
 - Codex 시작: `omc team 1:codex "..."` (worktree에서 실행)
+- Codex는 `pnpm verify` 통과 후 Claude 리뷰 요청 전에 반드시 현재 작업만 의도적으로 커밋한다.
 
 ## Work Unit & Worktree Workflow
 
