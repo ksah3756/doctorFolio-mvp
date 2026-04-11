@@ -18,7 +18,7 @@ Rules:
 |------|-------|-------------|
 | Decomposer | Claude | 파일 겹침 없는 독립 서브태스크로 분리, Track A/B 배분 |
 | Implementer (Track A) | Claude | 구현 → `pnpm verify` → Codex 리뷰 요청 |
-| Implementer (Track B) | Codex | 구현 → `pnpm verify` → Claude 리뷰 |
+| Implementer (Track B) | Codex | 구현 → `pnpm verify` → `discord-review-notify`로 완료+Claude 리뷰 요청 |
 | Reviewer (Track A) | Codex | `/codex review` 또는 `/codex challenge` |
 | Reviewer (Track B) | Claude | Codex 구현물 검토 |
 | Git Manager | Claude | 리뷰 통과 후 PR 생성 및 머지. 항상 Claude. |
@@ -32,7 +32,7 @@ Claude 구현 → pnpm verify → /codex review → 수정 → PR
 ```
 Decomposer(Claude)
     ├── Track A: Claude 구현 → pnpm verify → Codex 리뷰 → 수정
-    └── Track B: Codex 구현 → pnpm verify → Claude 리뷰 → 수정
+    └── Track B: Codex 구현 → pnpm verify → `discord-review-notify`로 Claude 리뷰 요청 → 수정
                     ↓ (양쪽 완료 후)
               Git Manager(Claude) → PR
 ```
@@ -40,6 +40,7 @@ Decomposer(Claude)
 - P1 발견 시 해당 트랙 구현자가 수정 후 재검토.
 - Track B 시작: `omc team 1:codex "..."` (tmux worktree에서 실행)
 - Role prompts: `prompts/planner.md`, `prompts/implementer.md`, `prompts/tester.md`, `prompts/reviewer.md`, `prompts/git-manager.md`
+- Codex worker 성공 종료 시 raw `transition-task-status ... to=completed` 대신 `discord-review-notify` 스크립트로 완료 전이와 Discord review 요청을 한 번에 처리한다. 실패 시에만 raw `to=failed` 전이를 사용한다.
 
 ## Work Unit & Worktree Workflow
 
@@ -91,7 +92,26 @@ P1 없으면 Git Manager(Claude)가 각각 PR 생성 및 순차 머지.
 
 ### Review Handoff (REVIEW-N.md 컨벤션)
 
-**완료 신호:** `pnpm verify` 통과 → `git commit` → Claude가 `git log main..HEAD`로 감지
+**완료 신호:** `pnpm verify` 통과 → `git commit` → `discord-review-notify` 스크립트로 task 완료 + Discord 리뷰 요청
+
+**리뷰 요청 웹훅 호출 플로우 (Codex worker 성공 종료 경로):**
+1. 워커 시작 직후 `omc team api claim-task ... --json` 실행 후 `claim_token`을 저장한다.
+2. 구현/수정 작업을 끝내고 `pnpm verify` 또는 fallback verify를 통과시킨다.
+3. 필요한 경우 `REVIEW-N.md`의 `## Implementer Response`를 갱신하고 커밋한다.
+4. 성공 종료는 raw `transition-task-status ... to=completed`를 직접 치지 말고 아래 스크립트로 처리한다.
+```bash
+bash ~/.codex/skills/discord-review-notify/scripts/complete-task-and-notify-discord-review.sh \
+  --team-name "<team_name>" \
+  --task-id "<task_id>" \
+  --claim-token "<claim_token>"
+```
+5. 위 스크립트가 `in_progress -> completed` 전이와 Discord webhook 멘션 전송을 함께 처리한다.
+6. 실패 시에만 raw `omc team api transition-task-status ... to=failed`를 사용한다.
+
+**환경 변수 전제:**
+- `DISCORD_WEBHOOK_URL`
+- `DISCORD_MENTION_USER_ID` 또는 `DISCORD_MENTION_ROLE_ID`
+- 위 값은 worker shell에서 바로 읽혀야 하며, OMC notifier 설정과 별개로 스크립트가 직접 사용한다.
 
 **리뷰어 작성 형식** (`REVIEW-1.md` → `REVIEW-2.md` 순서로 워크트리 루트에 작성):
 ```
@@ -117,7 +137,7 @@ p2_count: 1
 
 **Codex 재구현 트리거 (유저가 실행):**
 ```bash
-omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verify. If verify fails append failure output under '## Implementer Response' and note VERIFY_FAILED — do not commit. If passes, append what you fixed then commit."
+omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verify. If verify fails append failure output under '## Implementer Response' and note VERIFY_FAILED — do not commit. If passes, append what you fixed, commit, then use the discord-review-notify skill/script to complete the task and send the Claude review webhook mention. Do not call raw completed transition separately."
 ```
 
 **규칙:**
@@ -125,6 +145,7 @@ omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verif
 - 리뷰 담당자가 누구든 채팅만으로 끝내지 말고 worktree 루트의 `REVIEW-N.md`에 결과를 남긴다.
 - YAML `status` + `## Verdict` 는 해당 사이클의 실제 리뷰 담당자가 작성한다.
 - 구현 담당자는 `## Implementer Response` 섹션만 갱신한다.
+- Codex worker가 Claude 리뷰 요청이 필요한 성공 종료를 할 때는 `~/.codex/skills/discord-review-notify/scripts/complete-task-and-notify-discord-review.sh` 또는 동일 스킬 경로를 사용한다.
 - 3사이클 후에도 P1 남으면 `status: ESCALATED` → 유저에게 에스컬레이션
 - `REVIEW*.md`는 `.gitignore` 적용 (PR diff에 포함되지 않음)
 

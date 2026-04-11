@@ -1,6 +1,6 @@
 // src/components/ConfirmCard.tsx
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { PortfolioPosition, AssetClass } from '@/lib/types'
 import styles from './ConfirmCard.module.css'
 
@@ -13,20 +13,24 @@ interface Props {
   asRow?: boolean           // 768px+ 테이블 뷰용
   onDelete: (id: string) => void
   onAssetClassChange: (id: string, assetClass: AssetClass) => void
+  onSectorChange: (id: string, sector: string) => void
   onFieldChange: (id: string, field: EditableField, value: number) => void
 }
 
 const ASSET_CLASSES: AssetClass[] = ['국내주식', '해외주식', '채권', '기타']
 
-export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAssetClassChange, onFieldChange }: Props) {
+export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAssetClassChange, onSectorChange, onFieldChange }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const cancelledSectorBlurRef = useRef(false)
   const [editValues, setEditValues] = useState({
     value: String(Math.round(position.value)),
     avgCost: String(Math.round(position.avgCost)),
     currentPrice: String(Math.round(position.currentPrice)),
   })
+  const [sectorEdit, setSectorEdit] = useState({ draft: position.sector, base: position.sector })
 
   const fmt = (n: number) => Math.round(n).toLocaleString('ko-KR')
+  const sectorInput = sectorEdit.base === position.sector ? sectorEdit.draft : position.sector
 
   function handleBlur(field: EditableField) {
     const parsed = parseInt(editValues[field].replace(/,/g, ''), 10)
@@ -45,6 +49,26 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
     }
   }
 
+  function handleSectorBlur() {
+    if (cancelledSectorBlurRef.current) {
+      cancelledSectorBlurRef.current = false
+      return
+    }
+
+    const nextSector = sectorInput.trim()
+    onSectorChange(position.id, nextSector)
+    setSectorEdit({ draft: nextSector || position.sector, base: position.sector })
+  }
+
+  function handleSectorKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') e.currentTarget.blur()
+    if (e.key === 'Escape') {
+      cancelledSectorBlurRef.current = true
+      setSectorEdit({ draft: position.sector, base: position.sector })
+      e.currentTarget.blur()
+    }
+  }
+
   if (asRow) {
     return (
       <tr className={`${styles.tr} ${isDuplicate ? styles.trDup : ''}`}>
@@ -58,7 +82,17 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
             {ASSET_CLASSES.map(ac => <option key={ac} value={ac}>{ac}</option>)}
           </select>
         </td>
-        <td className={styles.td}><span className={styles.sectorSm}>{position.sector}</span></td>
+        <td className={styles.td}>
+          <input
+            className={`${styles.tdInput} ${styles.sectorInputSm}`}
+            type="text"
+            value={sectorInput}
+            onChange={e => setSectorEdit({ draft: e.target.value, base: position.sector })}
+            onBlur={handleSectorBlur}
+            onKeyDown={handleSectorKeyDown}
+            aria-label="섹터 수정"
+          />
+        </td>
         <td className={styles.tdNum}>
           <input className={styles.tdInput} inputMode="numeric" value={editValues.value}
             onChange={e => setEditValues(prev => ({ ...prev, value: e.target.value }))}
@@ -163,7 +197,15 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
               <option key={ac} value={ac}>{ac}</option>
             ))}
           </select>
-          <div className={styles.sector}>{position.sector}</div>
+          <input
+            className={styles.sectorInput}
+            type="text"
+            value={sectorInput}
+            onChange={e => setSectorEdit({ draft: e.target.value, base: position.sector })}
+            onBlur={handleSectorBlur}
+            onKeyDown={handleSectorKeyDown}
+            aria-label="섹터 수정"
+          />
         </div>
       </div>
 

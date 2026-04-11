@@ -27,6 +27,19 @@ function readStoredTarget(): TargetAllocation {
   }
 }
 
+function readStoredPositions(): PortfolioPosition[] {
+  if (typeof window === 'undefined') return []
+
+  const raw = sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS)
+  if (!raw) return []
+
+  try {
+    return JSON.parse(raw) as PortfolioPosition[]
+  } catch {
+    return []
+  }
+}
+
 export default function ConfirmPage() {
   const router = useRouter()
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -40,11 +53,10 @@ export default function ConfirmPage() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  const [positions, setPositions] = useState<PortfolioPosition[]>(() => {
-    if (typeof window === 'undefined') return []
-    const raw = sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS)
-    return raw ? (JSON.parse(raw) as PortfolioPosition[]) : []
-  })
+  const [positions, setPositions] = useState<PortfolioPosition[]>(() => readStoredPositions())
+  const [originalSectors] = useState<Record<string, string>>(() =>
+    Object.fromEntries(readStoredPositions().map(position => [position.id, position.sector]))
+  )
   const [loaded] = useState(() => {
     if (typeof window === 'undefined') return false
     return sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS) !== null
@@ -67,6 +79,16 @@ export default function ConfirmPage() {
 
   function handleAssetClassChange(id: string, assetClass: AssetClass) {
     setPositions(prev => prev.map(p => p.id === id ? { ...p, assetClass } : p))
+  }
+
+  function handleSectorChange(id: string, sector: string) {
+    const nextSector = sector || originalSectors[id] || '기타'
+
+    setPositions(prev => {
+      const nextPositions = prev.map(p => p.id === id ? { ...p, sector: nextSector } : p)
+      sessionStorage.setItem(SESSION_KEYS.RAW_POSITIONS, JSON.stringify(nextPositions))
+      return nextPositions
+    })
   }
 
   function handleFieldChange(id: string, field: 'value' | 'avgCost' | 'currentPrice', value: number) {
@@ -128,6 +150,7 @@ export default function ConfirmPage() {
                   isDuplicate={(nameCounts[p.name] ?? 0) > 1}
                   onDelete={handleDelete}
                   onAssetClassChange={handleAssetClassChange}
+                  onSectorChange={handleSectorChange}
                   onFieldChange={handleFieldChange}
                 />
               ))}
@@ -145,6 +168,7 @@ export default function ConfirmPage() {
               isDuplicate={(nameCounts[p.name] ?? 0) > 1}
               onDelete={handleDelete}
               onAssetClassChange={handleAssetClassChange}
+              onSectorChange={handleSectorChange}
               onFieldChange={handleFieldChange}
             />
           ))}
