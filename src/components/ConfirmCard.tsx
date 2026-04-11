@@ -27,6 +27,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
     avgCost: String(Math.round(position.avgCost)),
     currentPrice: String(Math.round(position.currentPrice)),
   })
+  const isManualCash = position.name === '현금' && position.sourceImage === 0 && position.assetClass === '기타'
   const selectedSector = SECTOR_LABELS.some(label => label === position.sector)
     ? position.sector
     : '기타'
@@ -57,6 +58,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
         </td>
         <td className={styles.td}>
           <select className={styles.selectSm} value={position.assetClass}
+            disabled={isManualCash}
             onChange={e => onAssetClassChange(position.id, e.target.value as AssetClass)}>
             {ASSET_CLASSES.map(ac => <option key={ac} value={ac}>{ac}</option>)}
           </select>
@@ -65,6 +67,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
           <select
             className={`${styles.selectSm} ${styles.sectorSelectSm}`}
             value={selectedSector}
+            disabled={isManualCash}
             onChange={e => onSectorChange(position.id, e.target.value)}
             aria-label="섹터 수정"
           >
@@ -82,12 +85,14 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
         <td className={`${styles.tdNum} ${styles.tdPct}`}>{pct.toFixed(1)}%</td>
         <td className={styles.tdNum}>
           <input className={`${styles.tdInput} ${styles.secondary}`} inputMode="numeric" value={editValues.avgCost}
+            disabled={isManualCash}
             onChange={e => setEditValues(prev => ({ ...prev, avgCost: e.target.value }))}
             onBlur={() => handleBlur('avgCost')} onKeyDown={e => handleKeyDown(e, 'avgCost')}
             aria-label="매입가 수정" />
         </td>
         <td className={styles.tdNum}>
           <input className={`${styles.tdInput} ${styles.secondary}`} inputMode="numeric" value={editValues.currentPrice}
+            disabled={isManualCash}
             onChange={e => setEditValues(prev => ({ ...prev, currentPrice: e.target.value }))}
             onBlur={() => handleBlur('currentPrice')} onKeyDown={e => handleKeyDown(e, 'currentPrice')}
             aria-label="현재가 수정" />
@@ -170,6 +175,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
           <select
             className={styles.select}
             value={position.assetClass}
+            disabled={isManualCash}
             onChange={e => onAssetClassChange(position.id, e.target.value as AssetClass)}
             aria-label="자산군 선택"
           >
@@ -180,6 +186,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
           <select
             className={`${styles.select} ${styles.sectorSelect}`}
             value={selectedSector}
+            disabled={isManualCash}
             onChange={e => onSectorChange(position.id, e.target.value)}
             aria-label="섹터 수정"
           >
@@ -207,7 +214,7 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
           </div>
           <div className={styles.expandRow}>
             <span className={styles.expandLabel}>출처</span>
-            <span className={styles.expandVal}>이미지 {position.sourceImage}</span>
+            <span className={styles.expandVal}>{isManualCash ? '직접 입력' : `이미지 ${position.sourceImage}`}</span>
           </div>
         </div>
       )}

@@ -76,6 +76,18 @@ describe('runDiagnosis', () => {
     expect(result.actions).toHaveLength(0)
   })
 
+  it('기타 자산은 currentAllocation 기타 비중에 포함된다', () => {
+    const positions = [
+      makePos({ value: 8_000_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 2_000_000, assetClass: '기타', name: '현금', code: null, qty: 0, avgCost: 0, currentPrice: 0 }),
+    ]
+
+    const result = runDiagnosis(positions, TARGET)
+
+    expect(result.currentAllocation['국내주식']).toBe(80)
+    expect(result.currentAllocation['기타']).toBe(20)
+  })
+
   it('국내주식만 100% → 액션에 매도 항목 포함', () => {
     const positions = [
       makePos({ value: 10_000_000, assetClass: '국내주식', name: '현대차', code: '005380', qty: 20, currentPrice: 500_000 }),

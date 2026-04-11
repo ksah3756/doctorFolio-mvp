@@ -64,6 +64,7 @@ export interface DiagnosisResult {
 export const SESSION_KEYS = {
   RAW_POSITIONS: 'pd_positions',       // OCR 직후 원본 (PortfolioPosition[])
   CONFIRMED: 'pd_confirmed_positions', // 확인 완료 (PortfolioPosition[])
+  CASH: 'pd_cash_amount',              // 확인 화면 수동 입력 현금
   TARGET: 'pd_target',                 // TargetAllocation
   DIAGNOSIS: 'pd_diagnosis',           // DiagnosisResult
   INVESTOR_PROFILE: 'pd_investor_profile', // InvestorProfile

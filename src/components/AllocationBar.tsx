@@ -7,17 +7,17 @@ interface Props {
   target: TargetAllocation
 }
 
-const ROWS: { key: keyof TargetAllocation; label: string }[] = [
-  { key: '국내주식', label: '국내주식' },
-  { key: '해외주식', label: '해외주식' },
-  { key: '채권',     label: '채권·기타' },
+const ROWS: { key: keyof TargetAllocation; label: string; currentKeys: AssetClass[] }[] = [
+  { key: '국내주식', label: '국내주식', currentKeys: ['국내주식'] },
+  { key: '해외주식', label: '해외주식', currentKeys: ['해외주식'] },
+  { key: '채권', label: '채권·기타', currentKeys: ['채권', '기타'] },
 ]
 
 export function AllocationBar({ current, target }: Props) {
   return (
     <div className={styles.wrap}>
-      {ROWS.map(({ key, label }) => {
-        const cur = current[key] ?? 0
+      {ROWS.map(({ key, label, currentKeys }) => {
+        const cur = currentKeys.reduce((sum, assetClass) => sum + (current[assetClass] ?? 0), 0)
         const tgt = target[key] ?? 0
         const isOver = cur > tgt + 5
         const isUnder = cur < tgt - 5

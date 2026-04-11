@@ -15,6 +15,76 @@
 .count { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.55); }
 .hint { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.5; }
 
+.cashSection {
+  padding: 16px;
+}
+
+.cashHeader {
+  margin-bottom: 12px;
+}
+
+.cashTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+}
+
+.cashHint {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.cashInputWrap {
+  display: block;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.cashLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.cashInputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cashInput {
+  width: 100%;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  background: #fff;
+}
+
+.cashInput:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.cashUnit {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
 .scroll {
   flex: 1;
   overflow-y: auto;
@@ -167,6 +237,10 @@
     flex: 1;
     overflow-y: auto;
     padding: 16px 32px 24px;
+  }
+
+  .cashSection {
+    padding: 20px 32px 0;
   }
 
   .targetSection {

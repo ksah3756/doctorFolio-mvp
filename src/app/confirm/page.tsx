@@ -8,6 +8,36 @@ import type { PortfolioPosition, AssetClass, TargetAllocation } from '@/lib/type
 import styles from './page.module.css'
 
 const TARGET_FIELDS: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권']
+const CASH_POSITION_ID = 'manual-cash-position'
+
+function readStoredCash(): string {
+  if (typeof window === 'undefined') return ''
+
+  const raw = sessionStorage.getItem(SESSION_KEYS.CASH)
+  return raw && /^\d+$/.test(raw) ? raw : ''
+}
+
+function parseCashAmount(value: string): number {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return 0
+
+  return Number(digits)
+}
+
+function createCashPosition(value: number): PortfolioPosition {
+  return {
+    id: CASH_POSITION_ID,
+    name: '현금',
+    code: null,
+    qty: 0,
+    value,
+    avgCost: 0,
+    currentPrice: 0,
+    assetClass: '기타',
+    sector: '기타',
+    sourceImage: 0,
+  }
+}
 
 function readStoredTarget(): TargetAllocation {
   if (typeof window === 'undefined') return { ...DEFAULT_TARGET }
@@ -62,26 +92,60 @@ export default function ConfirmPage() {
     return sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS) !== null
   })
   const [target, setTarget] = useState<TargetAllocation>(() => readStoredTarget())
+  const [cashInput, setCashInput] = useState(() => readStoredCash())
+
+  const cashAmount = parseCashAmount(cashInput)
+  const cashPosition = cashAmount > 0 ? createCashPosition(cashAmount) : null
+  const displayedPositions = cashPosition ? [...positions, cashPosition] : positions
 
   useEffect(() => {
     if (!loaded) router.replace('/')
   }, [loaded, router])
 
-  const totalValue = positions.reduce((s, p) => s + p.value, 0)
+  const totalValue = displayedPositions.reduce((sum, position) => sum + position.value, 0)
 
   // 중복 티커 감지
   const nameCounts: Record<string, number> = {}
-  for (const p of positions) nameCounts[p.name] = (nameCounts[p.name] ?? 0) + 1
+  for (const position of displayedPositions) {
+    nameCounts[position.name] = (nameCounts[position.name] ?? 0) + 1
+  }
+
+  function persistCashInput(nextValue: string) {
+    if (nextValue) {
+      sessionStorage.setItem(SESSION_KEYS.CASH, nextValue)
+      return
+    }
+
+    sessionStorage.removeItem(SESSION_KEYS.CASH)
+  }
+
+  function handleCashChange(value: string) {
+    const digits = value.replace(/\D/g, '')
+    setCashInput(digits)
+    persistCashInput(digits)
+  }
+
+  function clearCash() {
+    setCashInput('')
+    persistCashInput('')
+  }
 
   function handleDelete(id: string) {
+    if (id === CASH_POSITION_ID) {
+      clearCash()
+      return
+    }
+
     setPositions(prev => prev.filter(p => p.id !== id))
   }
 
   function handleAssetClassChange(id: string, assetClass: AssetClass) {
+    if (id === CASH_POSITION_ID) return
     setPositions(prev => prev.map(p => p.id === id ? { ...p, assetClass } : p))
   }
 
   function handleSectorChange(id: string, sector: string) {
+    if (id === CASH_POSITION_ID) return
     const nextSector = sector || originalSectors[id] || '기타'
 
     setPositions(prev => {
@@ -92,6 +156,11 @@ export default function ConfirmPage() {
   }
 
   function handleFieldChange(id: string, field: 'value' | 'avgCost' | 'currentPrice', value: number) {
+    if (id === CASH_POSITION_ID) {
+      if (field === 'value') handleCashChange(String(value))
+      return
+    }
+
     setPositions(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
   }
 
@@ -100,9 +169,9 @@ export default function ConfirmPage() {
   }
 
   function handleStart() {
-    sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(positions))
+    sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(displayedPositions))
     sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(target))
-    const diagnosis = runDiagnosis(positions, target)
+    const diagnosis = runDiagnosis(displayedPositions, target)
     sessionStorage.setItem(SESSION_KEYS.DIAGNOSIS, JSON.stringify(diagnosis))
     router.push('/diagnosis')
   }
@@ -119,10 +188,31 @@ export default function ConfirmPage() {
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <span className={styles.title}>이렇게 인식했어요</span>
-          <span className={styles.count}>{positions.length}종목</span>
+          <span className={styles.count}>{displayedPositions.length}종목</span>
         </div>
         <p className={styles.hint}>자산군을 확인하고, 금액이 잘못 인식됐으면 눌러서 수정하세요.</p>
       </div>
+
+      <section className={styles.cashSection}>
+        <div className={styles.cashHeader}>
+          <h2 className={styles.cashTitle}>보유 현금</h2>
+          <p className={styles.cashHint}>진단에 포함할 현금이 있으면 직접 입력하세요.</p>
+        </div>
+        <label className={styles.cashInputWrap}>
+          <span className={styles.cashLabel}>보유 현금</span>
+          <div className={styles.cashInputRow}>
+            <input
+              className={styles.cashInput}
+              inputMode="numeric"
+              value={cashInput}
+              onChange={e => handleCashChange(e.target.value)}
+              placeholder="0"
+              aria-label="보유 현금 입력"
+            />
+            <span className={styles.cashUnit}>원</span>
+          </div>
+        </label>
+      </section>
 
       {isDesktop ? (
         /* 768px+ 테이블 뷰 */
@@ -141,9 +231,9 @@ export default function ConfirmPage() {
               </tr>
             </thead>
             <tbody>
-              {positions.map(p => (
+              {displayedPositions.map(p => (
                 <ConfirmCard
-                  key={p.id}
+                  key={p.id === CASH_POSITION_ID ? `${p.id}-${p.value}` : p.id}
                   asRow
                   position={p}
                   pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
@@ -160,9 +250,9 @@ export default function ConfirmPage() {
       ) : (
         /* 모바일 카드 뷰 */
         <div className={styles.scroll}>
-          {positions.map(p => (
+          {displayedPositions.map(p => (
             <ConfirmCard
-              key={p.id}
+              key={p.id === CASH_POSITION_ID ? `${p.id}-${p.value}` : p.id}
               position={p}
               pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
               isDuplicate={(nameCounts[p.name] ?? 0) > 1}
@@ -180,7 +270,7 @@ export default function ConfirmPage() {
           </div>
         )}
 
-        {positions.length === 0 && (
+        {displayedPositions.length === 0 && (
           <div className={styles.empty}>
             <p>인식된 종목이 없습니다.</p>
             <p>주식잔고 화면을 캡처했는지 확인해주세요.</p>
@@ -192,7 +282,7 @@ export default function ConfirmPage() {
       </div>
       )}
 
-      {positions.length > 0 && (
+      {displayedPositions.length > 0 && (
         <section className={styles.targetSection}>
           <div className={styles.targetHeader}>
             <h2 className={styles.targetTitle}>목표 배분 조정</h2>
@@ -233,7 +323,7 @@ export default function ConfirmPage() {
         </section>
       )}
 
-      {positions.length > 0 && (
+      {displayedPositions.length > 0 && (
         <div className="fixed-cta">
           <button className="btn-primary" onClick={handleStart}>진단 시작</button>
         </div>
