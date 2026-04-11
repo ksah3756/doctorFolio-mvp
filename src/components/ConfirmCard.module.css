@@ -118,20 +118,15 @@
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
-.sectorInput {
+.sectorSelect {
   flex: 1;
   min-width: 0;
   font-size: 12px;
   font-weight: 600;
   font-family: var(--font);
   color: var(--text-2);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-input);
-  padding: 9px 11px;
-  outline: none;
 }
-.sectorInput:focus {
+.sectorSelect:focus {
   border-color: var(--primary);
 }
 
@@ -180,7 +175,7 @@
   background-repeat: no-repeat;
   background-position: right 7px center;
 }
-.sectorInputSm {
+.sectorSelectSm {
   min-width: 110px;
   color: var(--text-2);
 }

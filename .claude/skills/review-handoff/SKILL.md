@@ -21,7 +21,12 @@ Branch: feat/N-slug
 ```bash
 omc team 1:codex "Read REVIEW-{N}.md. Fix all unchecked P1 items. Run pnpm verify. If verify fails append failure output under '## Implementer Response' and note VERIFY_FAILED — do not commit. If passes, append what you fixed, commit, then use the discord-review-notify skill/script to complete the task and send the Claude review webhook mention. Do not call raw completed transition separately."
 ```
-4. **p1_count = 0 (APPROVED)** → PR 생성
+4. **p1_count = 0 (APPROVED)** → PR 생성 + Discord 알림:
+```
+✅ APPROVED — {branch}
+PR: {pr_url}
+이상 없음. 머지해도 됩니다.
+```
 
 ## REVIEW-N.md 작성 형식
 

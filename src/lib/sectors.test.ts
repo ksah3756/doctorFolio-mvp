@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { autoClassify } from './sectors'
+import { autoClassify, SECTOR_LABELS } from './sectors'
 
 describe('autoClassify', () => {
+  it('exports the shared sector dropdown labels', () => {
+    expect(SECTOR_LABELS).toHaveLength(30)
+    expect(SECTOR_LABELS).toEqual([
+      '에너지', '소재', '자본재', '전문서비스', '운수', '자동차', '내구소비재', '소비자서비스',
+      '소매유통', '필수소비재유통', '식음료', '생활용품', '의료기기/서비스', '제약/바이오',
+      '은행', '금융서비스', '보험', '소프트웨어', '하드웨어', '반도체',
+      '통신', '미디어/엔터', '유틸리티', '리츠', '부동산',
+      '미국ETF', '국내ETF', '채권ETF', '원자재ETF', '기타',
+    ])
+  })
+
   it('uses the static sector DB for known stock names', () => {
     expect(autoClassify('삼성전자', '005930')).toEqual({
       sector: '반도체',

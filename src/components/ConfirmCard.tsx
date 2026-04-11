@@ -1,7 +1,8 @@
 // src/components/ConfirmCard.tsx
 'use client'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { PortfolioPosition, AssetClass } from '@/lib/types'
+import { SECTOR_LABELS } from '@/lib/sectors'
 import styles from './ConfirmCard.module.css'
 
 type EditableField = 'value' | 'avgCost' | 'currentPrice'
@@ -21,16 +22,14 @@ const ASSET_CLASSES: AssetClass[] = ['국내주식', '해외주식', '채권', '
 
 export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAssetClassChange, onSectorChange, onFieldChange }: Props) {
   const [expanded, setExpanded] = useState(false)
-  const cancelledSectorBlurRef = useRef(false)
   const [editValues, setEditValues] = useState({
     value: String(Math.round(position.value)),
     avgCost: String(Math.round(position.avgCost)),
     currentPrice: String(Math.round(position.currentPrice)),
   })
-  const [sectorEdit, setSectorEdit] = useState({ draft: position.sector, base: position.sector })
-
-  const fmt = (n: number) => Math.round(n).toLocaleString('ko-KR')
-  const sectorInput = sectorEdit.base === position.sector ? sectorEdit.draft : position.sector
+  const selectedSector = SECTOR_LABELS.some(label => label === position.sector)
+    ? position.sector
+    : '기타'
 
   function handleBlur(field: EditableField) {
     const parsed = parseInt(editValues[field].replace(/,/g, ''), 10)
@@ -49,26 +48,6 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
     }
   }
 
-  function handleSectorBlur() {
-    if (cancelledSectorBlurRef.current) {
-      cancelledSectorBlurRef.current = false
-      return
-    }
-
-    const nextSector = sectorInput.trim()
-    onSectorChange(position.id, nextSector)
-    setSectorEdit({ draft: nextSector || position.sector, base: position.sector })
-  }
-
-  function handleSectorKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') e.currentTarget.blur()
-    if (e.key === 'Escape') {
-      cancelledSectorBlurRef.current = true
-      setSectorEdit({ draft: position.sector, base: position.sector })
-      e.currentTarget.blur()
-    }
-  }
-
   if (asRow) {
     return (
       <tr className={`${styles.tr} ${isDuplicate ? styles.trDup : ''}`}>
@@ -83,15 +62,16 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
           </select>
         </td>
         <td className={styles.td}>
-          <input
-            className={`${styles.tdInput} ${styles.sectorInputSm}`}
-            type="text"
-            value={sectorInput}
-            onChange={e => setSectorEdit({ draft: e.target.value, base: position.sector })}
-            onBlur={handleSectorBlur}
-            onKeyDown={handleSectorKeyDown}
+          <select
+            className={`${styles.selectSm} ${styles.sectorSelectSm}`}
+            value={selectedSector}
+            onChange={e => onSectorChange(position.id, e.target.value)}
             aria-label="섹터 수정"
-          />
+          >
+            {SECTOR_LABELS.map(sector => (
+              <option key={sector} value={sector}>{sector}</option>
+            ))}
+          </select>
         </td>
         <td className={styles.tdNum}>
           <input className={styles.tdInput} inputMode="numeric" value={editValues.value}
@@ -197,15 +177,16 @@ export function ConfirmCard({ position, pct, isDuplicate, asRow, onDelete, onAss
               <option key={ac} value={ac}>{ac}</option>
             ))}
           </select>
-          <input
-            className={styles.sectorInput}
-            type="text"
-            value={sectorInput}
-            onChange={e => setSectorEdit({ draft: e.target.value, base: position.sector })}
-            onBlur={handleSectorBlur}
-            onKeyDown={handleSectorKeyDown}
+          <select
+            className={`${styles.select} ${styles.sectorSelect}`}
+            value={selectedSector}
+            onChange={e => onSectorChange(position.id, e.target.value)}
             aria-label="섹터 수정"
-          />
+          >
+            {SECTOR_LABELS.map(sector => (
+              <option key={sector} value={sector}>{sector}</option>
+            ))}
+          </select>
         </div>
       </div>
 

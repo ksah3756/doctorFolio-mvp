@@ -4,6 +4,14 @@ import sectorData from '../data/sectors.json'
 type Classification = { sector: string; assetClass: AssetClass }
 type SectorEntry = Classification
 
+export const SECTOR_LABELS = [
+  '에너지', '소재', '자본재', '전문서비스', '운수', '자동차', '내구소비재', '소비자서비스',
+  '소매유통', '필수소비재유통', '식음료', '생활용품', '의료기기/서비스', '제약/바이오',
+  '은행', '금융서비스', '보험', '소프트웨어', '하드웨어', '반도체',
+  '통신', '미디어/엔터', '유틸리티', '리츠', '부동산',
+  '미국ETF', '국내ETF', '채권ETF', '원자재ETF', '기타',
+] as const
+
 const db = new Map(
   Object.entries(sectorData as Record<string, SectorEntry>).map(([name, entry]) => [
     normalizeLookupName(name),
