@@ -4,8 +4,28 @@ import { useRouter } from 'next/navigation'
 import { ConfirmCard } from '@/components/ConfirmCard'
 import { runDiagnosis } from '@/lib/engine'
 import { DEFAULT_TARGET, SESSION_KEYS } from '@/lib/types'
-import type { PortfolioPosition, AssetClass } from '@/lib/types'
+import type { PortfolioPosition, AssetClass, TargetAllocation } from '@/lib/types'
 import styles from './page.module.css'
+
+const TARGET_FIELDS: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권']
+
+function readStoredTarget(): TargetAllocation {
+  if (typeof window === 'undefined') return { ...DEFAULT_TARGET }
+
+  const raw = sessionStorage.getItem(SESSION_KEYS.TARGET)
+  if (!raw) return { ...DEFAULT_TARGET }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<Record<keyof TargetAllocation, unknown>>
+    return {
+      '국내주식': typeof parsed['국내주식'] === 'number' ? parsed['국내주식'] : DEFAULT_TARGET['국내주식'],
+      '해외주식': typeof parsed['해외주식'] === 'number' ? parsed['해외주식'] : DEFAULT_TARGET['해외주식'],
+      '채권': typeof parsed['채권'] === 'number' ? parsed['채권'] : DEFAULT_TARGET['채권'],
+    }
+  } catch {
+    return { ...DEFAULT_TARGET }
+  }
+}
 
 export default function ConfirmPage() {
   const router = useRouter()
@@ -29,6 +49,7 @@ export default function ConfirmPage() {
     if (typeof window === 'undefined') return false
     return sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS) !== null
   })
+  const [target, setTarget] = useState<TargetAllocation>(() => readStoredTarget())
 
   useEffect(() => {
     if (!loaded) router.replace('/')
@@ -52,10 +73,14 @@ export default function ConfirmPage() {
     setPositions(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
   }
 
+  function handleTargetChange(assetClass: keyof TargetAllocation, value: number) {
+    setTarget(prev => ({ ...prev, [assetClass]: value }))
+  }
+
   function handleStart() {
     sessionStorage.setItem(SESSION_KEYS.CONFIRMED, JSON.stringify(positions))
-    sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(DEFAULT_TARGET))
-    const diagnosis = runDiagnosis(positions, DEFAULT_TARGET)
+    sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(target))
+    const diagnosis = runDiagnosis(positions, target)
     sessionStorage.setItem(SESSION_KEYS.DIAGNOSIS, JSON.stringify(diagnosis))
     router.push('/diagnosis')
   }
@@ -63,6 +88,8 @@ export default function ConfirmPage() {
   if (!loaded) return null
 
   const hasDuplicates = Object.values(nameCounts).some(c => c > 1)
+  const targetSum = TARGET_FIELDS.reduce((sum, assetClass) => sum + target[assetClass], 0)
+  const isTargetBalanced = targetSum === 100
 
   return (
     <div className={styles.wrap}>
@@ -139,6 +166,47 @@ export default function ConfirmPage() {
           </div>
         )}
       </div>
+      )}
+
+      {positions.length > 0 && (
+        <section className={styles.targetSection}>
+          <div className={styles.targetHeader}>
+            <h2 className={styles.targetTitle}>목표 배분 조정</h2>
+            <p className={styles.targetHint}>원하는 비중으로 슬라이더를 조정한 뒤 진단을 시작하세요.</p>
+          </div>
+
+          <div className={styles.sliderList}>
+            {TARGET_FIELDS.map(assetClass => (
+              <label key={assetClass} className={styles.sliderRow}>
+                <div className={styles.sliderMeta}>
+                  <span className={styles.sliderLabel}>{assetClass}</span>
+                  <span className={styles.sliderValue}>{target[assetClass]}%</span>
+                </div>
+                <input
+                  className={styles.slider}
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={target[assetClass]}
+                  onChange={e => handleTargetChange(assetClass, Number(e.target.value))}
+                />
+              </label>
+            ))}
+          </div>
+
+          <div
+            className={`${styles.targetSummary} ${
+              isTargetBalanced ? styles.targetSummaryValid : styles.targetSummaryInvalid
+            }`}
+          >
+            <span className={styles.targetSummaryLabel}>합계</span>
+            <strong className={styles.targetSummaryValue}>{targetSum}%</strong>
+            <span className={styles.targetSummaryMessage}>
+              {isTargetBalanced ? '합계가 100%입니다.' : '합계가 100%가 되도록 조정해주세요.'}
+            </span>
+          </div>
+        </section>
       )}
 
       {positions.length > 0 && (
