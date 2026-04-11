@@ -94,6 +94,7 @@ export default function StylePage() {
           </div>
         )}
 
+        <div className={styles.cardWrap}>
         <div
           className={styles.cardTrack}
           role="radiogroup"
@@ -122,8 +123,9 @@ export default function StylePage() {
             )
           })}
         </div>
+        </div>
 
-        <div className={styles.cta}>
+        <div className="fixed-cta">
           <button
             className="btn-primary"
             disabled={!selected}
