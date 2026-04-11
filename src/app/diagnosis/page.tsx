@@ -7,13 +7,20 @@ import { AllocationBar } from '@/components/AllocationBar'
 import { ActionItem } from '@/components/ActionItem'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
+import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
 import { SESSION_KEYS } from '@/lib/types'
-import type { DiagnosisResult } from '@/lib/types'
+import type { DiagnosisResult, PortfolioPosition } from '@/lib/types'
 import styles from './page.module.css'
 
 export default function DiagnosisPage() {
   const router = useRouter()
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null)
+  const [positions] = useState<PortfolioPosition[]>(() => {
+    if (typeof window === 'undefined') return []
+    const raw = sessionStorage.getItem(SESSION_KEYS.CONFIRMED)
+    return raw ? (JSON.parse(raw) as PortfolioPosition[]) : []
+  })
+  const [copied, setCopied] = useState(false)
   const [explainOpen, setExplainOpen] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
   const [explainLoading, setExplainLoading] = useState(false)
@@ -45,6 +52,20 @@ export default function DiagnosisPage() {
       setExplainError(true)
     } finally {
       setExplainLoading(false)
+    }
+  }
+
+  const mbtiType = inferMbtiType(positions)
+  const mbtiProfile = MBTI_PROFILES[mbtiType]
+
+  async function handleShare() {
+    const text = `나의 투자 MBTI는 ${mbtiProfile.emoji} ${mbtiProfile.type} ${mbtiProfile.name}!\n포트폴리오 닥터에서 내 투자 성향을 분석해봤어요`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: '투자 MBTI', text }) } catch { /* 취소 */ }
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -116,6 +137,27 @@ export default function DiagnosisPage() {
             ))}
           </div>
         )}
+
+        {/* 투자 MBTI 카드 */}
+        <div className={`${styles.mbtiCard} ${styles[`mbtiGroup_${mbtiProfile.group}`]}`}>
+          <div className={styles.mbtiEyebrow}>나의 투자 MBTI</div>
+          <div className={styles.mbtiTop}>
+            <span className={styles.mbtiEmoji} aria-hidden="true">{mbtiProfile.emoji}</span>
+            <div>
+              <div className={styles.mbtiCode}>{mbtiProfile.type}</div>
+              <div className={styles.mbtiName}>{mbtiProfile.name}</div>
+            </div>
+          </div>
+          <div className={styles.mbtiTagline}>{mbtiProfile.investorTagline}</div>
+          <div className={styles.mbtiDesc}>{mbtiProfile.desc}</div>
+          <button
+            className={styles.shareBtn}
+            onClick={handleShare}
+            aria-label="투자 MBTI 공유하기"
+          >
+            {copied ? '✓ 복사됨' : '공유하기'}
+          </button>
+        </div>
 
         <div className={styles.disclaimer} aria-label="진단 결과 유의사항">
           {DIAGNOSIS_DISCLAIMER_LINES.map(line => (

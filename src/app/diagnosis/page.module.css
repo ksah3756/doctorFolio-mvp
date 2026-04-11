@@ -108,3 +108,89 @@
   color: var(--text-2);
 }
 .resetBtn:active { background: var(--border); }
+
+/* 투자 MBTI 카드 */
+.mbtiCard {
+  border-radius: var(--radius-card);
+  padding: 20px 18px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mbtiEyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.mbtiTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mbtiEmoji { font-size: 36px; line-height: 1; }
+
+.mbtiCode {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.mbtiName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+.mbtiTagline {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+
+.mbtiDesc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+/* 그룹별 포인트 컬러 */
+.mbtiGroup_analyst { border-color: var(--navy); }
+.mbtiGroup_analyst .mbtiCode { color: var(--navy); }
+
+.mbtiGroup_diplomat { border-color: #7c3aed; }
+.mbtiGroup_diplomat .mbtiCode { color: #7c3aed; }
+
+.mbtiGroup_sentinel { border-color: var(--green); }
+.mbtiGroup_sentinel .mbtiCode { color: var(--green); }
+
+.mbtiGroup_explorer { border-color: #ea580c; }
+.mbtiGroup_explorer .mbtiCode { color: #ea580c; }
+
+/* 공유 버튼 */
+.shareBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+  background: none;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-btn);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  transition: background 0.1s, color 0.1s;
+}
+.shareBtn:active { background: var(--bg); }
+.mbtiGroup_analyst .shareBtn { border-color: var(--navy); color: var(--navy); }
+.mbtiGroup_diplomat .shareBtn { border-color: #7c3aed; color: #7c3aed; }
+.mbtiGroup_sentinel .shareBtn { border-color: var(--green); color: var(--green); }
+.mbtiGroup_explorer .shareBtn { border-color: #ea580c; color: #ea580c; }
