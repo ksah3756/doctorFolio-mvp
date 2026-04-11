@@ -111,7 +111,7 @@ export default function UploadPage() {
       <nav className="nav"><span className="logo">포트폴리오<em>·</em>닥터</span></nav>
       <div className={styles.body}>
         <div className={styles.intro}>
-          <h1 className={styles.headline}>내 포트폴리오,<br />지금 뭐가<br />문제인지<br />알고 싶으세요?</h1>
+          <h1 className={styles.headline}>건강검진은 챙기시면서,<br />포트폴리오 검진은<br />언제 받으셨나요?</h1>
           <p className={styles.sub}>MTS 캡처 한 장이면<br />3분 안에 진단 결과를 드립니다.</p>
         </div>
 
@@ -140,7 +140,7 @@ export default function UploadPage() {
           onChange={e => e.target.files && handleFiles(e.target.files)}
         />
 
-        <p className={styles.privacy}>🔒 업로드한 이미지는 분석 후 즉시 삭제되며 서버에 저장되지 않습니다.</p>
+        <p className={styles.privacy}>🔒 이미지는 AI 분석 목적으로 Anthropic Claude API에 전송되며, 분석 후 저장되지 않습니다.</p>
 
         {error && <p className={styles.error}>⚠️ {error} — <a href="#" onClick={() => setError(null)}>다시 시도</a></p>}
 
