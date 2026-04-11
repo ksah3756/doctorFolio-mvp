@@ -3,10 +3,10 @@ import { buildOcrPrompt, getOcrErrorDetails, normalizeOcrItems, parseOcrErrorRes
 
 describe('parseOcrResponse', () => {
   it('extracts the JSON array from a Claude text response', () => {
-    const items = parseOcrResponse('분석 결과\n[{"name":"삼성전자","code":"005930","qty":2,"value":120000,"avgCost":50000,"currentPrice":60000}]')
+    const items = parseOcrResponse('분석 결과\n[{"name":"삼성전자","code":"005930","sector":"반도체","qty":2,"value":120000,"avgCost":50000,"currentPrice":60000}]')
 
     expect(items).toEqual([
-      { name: '삼성전자', code: '005930', qty: 2, value: 120000, avgCost: 50000, currentPrice: 60000 },
+      { name: '삼성전자', code: '005930', sector: '반도체', qty: 2, value: 120000, avgCost: 50000, currentPrice: 60000 },
     ])
   })
 
@@ -23,9 +23,9 @@ describe('normalizeOcrItems', () => {
   it('fills defaults and classifies positions', () => {
     const positions = normalizeOcrItems(
       [
-        { name: '삼성전자', code: '005930', qty: null, value: 120000, avgCost: null, currentPrice: null },
-        { name: 'TIGER 미국S&P500', code: null, qty: 4, value: 400000, avgCost: 90000, currentPrice: 100000 },
-        { name: '', code: '000000', qty: 1, value: 1000, avgCost: 1000, currentPrice: 1000 },
+        { name: '삼성전자', code: '005930', sector: null, qty: null, value: 120000, avgCost: null, currentPrice: null },
+        { name: 'TIGER 미국S&P500', code: null, sector: null, qty: 4, value: 400000, avgCost: 90000, currentPrice: 100000 },
+        { name: '', code: '000000', sector: null, qty: 1, value: 1000, avgCost: 1000, currentPrice: 1000 },
       ],
       2,
       () => 'fixed-id',
@@ -50,15 +50,47 @@ describe('normalizeOcrItems', () => {
       avgCost: 90000,
       currentPrice: 100000,
       assetClass: '해외주식',
-      sector: '미국 ETF',
+      sector: '미국ETF',
+    })
+  })
+
+  it('prefers the OCR sector over fallback classification', () => {
+    const [position] = normalizeOcrItems(
+      [
+        { name: '삼성전자', code: '005930', sector: '하드웨어', qty: 1, value: 120000, avgCost: null, currentPrice: 120000 },
+      ],
+      1,
+      () => 'ocr-sector',
+    )
+
+    expect(position).toMatchObject({
+      id: 'ocr-sector',
+      assetClass: '국내주식',
+      sector: '하드웨어',
+    })
+  })
+
+  it('falls back to name-keyed classification when OCR sector is missing', () => {
+    const [position] = normalizeOcrItems(
+      [
+        { name: 'SK 하이닉스', code: null, sector: null, qty: 2, value: 500000, avgCost: 240000, currentPrice: 250000 },
+      ],
+      1,
+      () => 'name-fallback',
+    )
+
+    expect(position).toMatchObject({
+      id: 'name-fallback',
+      assetClass: '국내주식',
+      sector: '반도체',
     })
   })
 
   it('skips zero-value rows and normalizes non-positive quantities to 1', () => {
     const positions = normalizeOcrItems(
       [
-        { name: '삼성전자', code: '005930', qty: 0, value: 100000, avgCost: null, currentPrice: null },
-        { name: '현금', code: null, qty: -3, value: 0, avgCost: null, currentPrice: null },
+        { name: '삼성전자', code: '005930', sector: null, qty: 0, value: 100000, avgCost: null, currentPrice: null },
+        { name: '현금', code: null, sector: null, qty: -3, value: 0, avgCost: null, currentPrice: null },
       ],
       1,
       () => 'safe-id',
@@ -77,7 +109,7 @@ describe('normalizeOcrItems', () => {
   it('prefers parsed currentPrice and recomputes value when the OCR total is inconsistent', () => {
     const [position] = normalizeOcrItems(
       [
-        { name: 'SK하이닉스', code: '000660', qty: 4, value: 2418500, avgCost: 270375, currentPrice: 875000 },
+        { name: 'SK하이닉스', code: '000660', sector: null, qty: 4, value: 2418500, avgCost: 270375, currentPrice: 875000 },
       ],
       1,
       () => 'ocr-fix',
@@ -95,7 +127,7 @@ describe('normalizeOcrItems', () => {
   it('derives total value from currentPrice when OCR returns a non-positive total', () => {
     const [position] = normalizeOcrItems(
       [
-        { name: 'TIGER 구리실물', code: null, qty: 20, value: -1600, avgCost: 15470, currentPrice: 15390 },
+        { name: 'TIGER 구리실물', code: null, sector: null, qty: 20, value: -1600, avgCost: 15470, currentPrice: 15390 },
       ],
       1,
       () => 'derived-total',
@@ -145,15 +177,19 @@ describe('getOcrErrorDetails', () => {
 })
 
 describe('buildOcrPrompt', () => {
-  it('explicitly requests 매입가, 현재가, 평가금액 and bans 손익/수익률 values', () => {
+  it('explicitly requests sector labels plus 매입가, 현재가, 평가금액 rules', () => {
     const prompt = buildOcrPrompt()
 
+    expect(prompt).toContain('- sector: 아래 25개 중 하나로 분류')
+    expect(prompt).toContain('ETF는 미국ETF, 국내ETF, 채권ETF, 원자재ETF 중 하나로 분류')
+    expect(prompt).toContain('의료기기/서비스, 제약/바이오')
+    expect(prompt).toContain('미디어/엔터, 유틸리티, 리츠, 부동산')
     expect(prompt).toContain('value: 평가금액/보유금액/보유평가금액 "총액"')
     expect(prompt).toContain('avgCost: 매입가/평균단가/매입단가 "1주당 단가"')
     expect(prompt).toContain('currentPrice: 현재가 "1주당 단가"')
     expect(prompt).toContain('"평가손익", "손익", "수익률", "%" 열의 숫자는 절대 사용하지 마')
     expect(prompt).toContain('"qty × currentPrice ≈ value" 관계가 성립하도록 읽어줘')
     expect(prompt).toContain('첫 번째 블록 = 손익/수익률 → 항상 무시')
-    expect(prompt).toContain('{"name":"TIGER 미국S&P500","qty":24,"value":589680,"avgCost":24892,"currentPrice":24570}')
+    expect(prompt).toContain('{"name":"TIGER 미국S&P500","code":null,"sector":"미국ETF","qty":24,"value":589680,"avgCost":24892,"currentPrice":24570}')
   })
 })

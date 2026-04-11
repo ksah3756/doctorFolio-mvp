@@ -4,6 +4,7 @@ import type { PortfolioPosition } from './types'
 export type OcrRaw = {
   name: string
   code: string | null
+  sector: string | null
   qty: number | null
   value: number | null
   avgCost: number | null
@@ -14,6 +15,13 @@ type OcrErrorDetails = {
   status: number
   message: string
 }
+
+const ETF_SECTOR_ASSET_CLASS = {
+  미국ETF: '해외주식',
+  국내ETF: '국내주식',
+  채권ETF: '채권',
+  원자재ETF: '기타',
+} as const
 
 export function parseOcrResponse(text: string): OcrRaw[] {
   const match = text.match(/\[[\s\S]*\]/)
@@ -32,6 +40,12 @@ export function buildOcrPrompt(): string {
 추출할 필드:
 - name: 종목명
 - code: 종목코드 (6자리 숫자 or 알파벳 티커, 없으면 null)
+- sector: 아래 25개 중 하나로 분류
+  에너지, 소재, 자본재, 전문서비스, 운수, 자동차, 내구소비재, 소비자서비스,
+  소매유통, 필수소비재유통, 식음료, 생활용품, 의료기기/서비스, 제약/바이오,
+  은행, 금융서비스, 보험, 소프트웨어, 하드웨어, 반도체,
+  통신, 미디어/엔터, 유틸리티, 리츠, 부동산
+  ETF는 미국ETF, 국내ETF, 채권ETF, 원자재ETF 중 하나로 분류
 - qty: 보유수량 (정수)
 - value: 평가금액/보유금액/보유평가금액 "총액" (원화 숫자만)
 - avgCost: 매입가/평균단가/매입단가 "1주당 단가" (원화 숫자만, 없으면 null)
@@ -62,11 +76,11 @@ export function buildOcrPrompt(): string {
 - JSON 배열만 반환, 다른 텍스트 없음
 
 예시:
-- {"name":"SK하이닉스","qty":4,"value":3500000,"avgCost":270375,"currentPrice":875000}
-- {"name":"현대차","qty":7,"value":3304000,"avgCost":271242,"currentPrice":472000}
-- {"name":"SK하이닉스","qty":1,"value":876000,"avgCost":260000,"currentPrice":876000}
-- {"name":"TIGER 미국S&P500","qty":24,"value":589680,"avgCost":24892,"currentPrice":24570}
-형식: [{"name":"삼성전자","code":"005930","qty":3,"value":557400,"avgCost":170400,"currentPrice":185800}]`
+- {"name":"SK하이닉스","code":"000660","sector":"반도체","qty":4,"value":3500000,"avgCost":270375,"currentPrice":875000}
+- {"name":"현대차","code":"005380","sector":"자동차","qty":7,"value":3304000,"avgCost":271242,"currentPrice":472000}
+- {"name":"SK하이닉스","code":"000660","sector":"반도체","qty":1,"value":876000,"avgCost":260000,"currentPrice":876000}
+- {"name":"TIGER 미국S&P500","code":null,"sector":"미국ETF","qty":24,"value":589680,"avgCost":24892,"currentPrice":24570}
+형식: [{"name":"삼성전자","code":"005930","sector":"반도체","qty":3,"value":557400,"avgCost":170400,"currentPrice":185800}]`
 }
 
 export function parseOcrErrorResponse(text: string, fallback = '인식 실패'): string {
@@ -148,7 +162,12 @@ export function normalizeOcrItems(
     if (!value || !currentPrice) return []
 
     const avgCost = raw.avgCost && raw.avgCost > 0 ? raw.avgCost : currentPrice
-    const { sector, assetClass } = autoClassify(raw.name, raw.code)
+    const fallbackClassification = autoClassify(raw.name, raw.code)
+    const normalizedSector = normalizeOcrSector(raw.sector)
+    const sector = normalizedSector ?? fallbackClassification.sector
+    const assetClass = normalizedSector
+      ? resolveAssetClassFromSector(normalizedSector, fallbackClassification.assetClass, raw.code)
+      : fallbackClassification.assetClass
 
     return [{
       id: createId(),
@@ -163,4 +182,23 @@ export function normalizeOcrItems(
       sourceImage,
     }]
   })
+}
+
+function normalizeOcrSector(sector: string | null): string | null {
+  if (!sector) return null
+
+  const normalized = sector.trim().replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')
+  return normalized || null
+}
+
+function resolveAssetClassFromSector(
+  sector: string,
+  fallbackAssetClass: PortfolioPosition['assetClass'],
+  code: string | null,
+): PortfolioPosition['assetClass'] {
+  const etfAssetClass = ETF_SECTOR_ASSET_CLASS[sector as keyof typeof ETF_SECTOR_ASSET_CLASS]
+  if (etfAssetClass) return etfAssetClass
+  if (code && /^[A-Z]{1,5}$/.test(code)) return '해외주식'
+  if (code && /^\d{6}$/.test(code)) return '국내주식'
+  return fallbackAssetClass
 }
