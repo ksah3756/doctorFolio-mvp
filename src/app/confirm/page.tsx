@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useReducer, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { ConfirmCard } from '@/components/ConfirmCard'
 import { SESSION_KEYS } from '@/lib/types'
@@ -7,6 +7,7 @@ import type { PortfolioPosition, AssetClass } from '@/lib/types'
 import styles from './page.module.css'
 
 const CASH_POSITION_ID = 'manual-cash-position'
+const DESKTOP_MEDIA_QUERY = '(min-width: 768px)'
 
 function readStoredCash(): string {
   if (typeof window === 'undefined') return ''
@@ -50,35 +51,98 @@ function readStoredPositions(): PortfolioPosition[] {
   }
 }
 
+interface ConfirmPageState {
+  hasStoredPositions: boolean
+  loaded: boolean
+  originalSectors: Record<string, string>
+  positions: PortfolioPosition[]
+}
+
+type ConfirmPageAction = {
+  positions: PortfolioPosition[]
+  type: 'positionsChanged'
+} | {
+  hasStoredPositions: boolean
+  positions: PortfolioPosition[]
+  type: 'hydrated'
+}
+
+function confirmPageStateReducer(
+  state: ConfirmPageState,
+  action: ConfirmPageAction
+): ConfirmPageState {
+  switch (action.type) {
+    case 'hydrated':
+      return {
+        hasStoredPositions: action.hasStoredPositions,
+        loaded: true,
+        originalSectors: Object.fromEntries(
+          action.positions.map(position => [position.id, position.sector])
+        ),
+        positions: action.positions,
+      }
+    case 'positionsChanged':
+      return {
+        ...state,
+        positions: action.positions,
+      }
+    default:
+      return state
+  }
+}
+
+function subscribeToDesktopViewport(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+
+  const mq = window.matchMedia(DESKTOP_MEDIA_QUERY)
+  mq.addEventListener('change', callback)
+  return () => mq.removeEventListener('change', callback)
+}
+
+function getDesktopSnapshot() {
+  if (typeof window === 'undefined') return false
+
+  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+}
+
 export default function ConfirmPage() {
   const router = useRouter()
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+  const isDesktop = useSyncExternalStore(
+    subscribeToDesktopViewport,
+    getDesktopSnapshot,
+    () => false
   )
+  const [{ hasStoredPositions, loaded, originalSectors, positions }, dispatch] = useReducer(
+    confirmPageStateReducer,
+    {
+      hasStoredPositions: true,
+      loaded: false,
+      originalSectors: {},
+      positions: [],
+    }
+  )
+  const [cashInput, setCashInput] = useState(() => readStoredCash())
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)')
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
+    const raw = sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS)
+    if (!raw) {
+      dispatch({ type: 'hydrated', hasStoredPositions: false, positions: [] })
+      return
+    }
 
-  const [positions, setPositions] = useState<PortfolioPosition[]>(() => readStoredPositions())
-  const [originalSectors] = useState<Record<string, string>>(() =>
-    Object.fromEntries(readStoredPositions().map(position => [position.id, position.sector]))
-  )
-  const [loaded] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return sessionStorage.getItem(SESSION_KEYS.RAW_POSITIONS) !== null
-  })
-  const [cashInput, setCashInput] = useState(() => readStoredCash())
+    dispatch({
+      type: 'hydrated',
+      hasStoredPositions: true,
+      positions: readStoredPositions(),
+    })
+  }, [])
 
   const cashAmount = parseCashAmount(cashInput)
   const diagnosisPositions = cashAmount > 0 ? [...positions, createCashPosition(cashAmount)] : positions
 
   useEffect(() => {
-    if (!loaded) router.replace('/')
-  }, [loaded, router])
+    if (loaded && !hasStoredPositions) router.replace('/')
+  }, [hasStoredPositions, loaded, router])
 
   const totalValue = positions.reduce((sum, position) => sum + position.value, 0)
 
@@ -103,28 +167,36 @@ export default function ConfirmPage() {
     persistCashInput(digits)
   }
 
+  function updatePositions(updater: (currentPositions: PortfolioPosition[]) => PortfolioPosition[]) {
+    const nextPositions = updater(positions)
+    dispatch({ type: 'positionsChanged', positions: nextPositions })
+    return nextPositions
+  }
+
   function handleDelete(id: string) {
-    setPositions(prev => prev.filter(p => p.id !== id))
+    updatePositions(currentPositions => currentPositions.filter(position => position.id !== id))
   }
 
   function handleAssetClassChange(id: string, assetClass: AssetClass) {
     if (id === CASH_POSITION_ID) return
-    setPositions(prev => prev.map(p => p.id === id ? { ...p, assetClass } : p))
+    updatePositions(currentPositions =>
+      currentPositions.map(position => position.id === id ? { ...position, assetClass } : position)
+    )
   }
 
   function handleSectorChange(id: string, sector: string) {
     if (id === CASH_POSITION_ID) return
     const nextSector = sector || originalSectors[id] || '기타'
-
-    setPositions(prev => {
-      const nextPositions = prev.map(p => p.id === id ? { ...p, sector: nextSector } : p)
-      sessionStorage.setItem(SESSION_KEYS.RAW_POSITIONS, JSON.stringify(nextPositions))
-      return nextPositions
-    })
+    const nextPositions = updatePositions(currentPositions =>
+      currentPositions.map(position => position.id === id ? { ...position, sector: nextSector } : position)
+    )
+    sessionStorage.setItem(SESSION_KEYS.RAW_POSITIONS, JSON.stringify(nextPositions))
   }
 
   function handleFieldChange(id: string, field: 'value' | 'avgCost' | 'currentPrice', value: number) {
-    setPositions(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
+    updatePositions(currentPositions =>
+      currentPositions.map(position => position.id === id ? { ...position, [field]: value } : position)
+    )
   }
 
   function handleStart() {
@@ -133,7 +205,7 @@ export default function ConfirmPage() {
     router.push('/style')
   }
 
-  if (!loaded) return null
+  if (!loaded || !hasStoredPositions) return null
 
   const hasDuplicates = Object.values(nameCounts).some(c => c > 1)
   const hasPositions = positions.length > 0
