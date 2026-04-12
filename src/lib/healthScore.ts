@@ -45,6 +45,8 @@ const STYLE_FIT_RULES: Record<AllocationBucket, StyleFitRule> = {
   },
 }
 
+const MAX_STYLE_FIT_SCORE = 60
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
@@ -171,4 +173,15 @@ export function computeHealthScore(
   const simplicityScore = getSimplicityScore(currentAllocation, positions)
 
   return clamp(Math.round(styleFitScore + diversificationScore + simplicityScore), 0, 100)
+}
+
+export function computeIdealScore(
+  currentAllocation: Record<AllocationBucket, number>,
+  positions: PortfolioPosition[],
+  desiredStyle: StyleKey,
+): number {
+  const diversificationScore = getDiversificationScore(positions, desiredStyle)
+  const simplicityScore = getSimplicityScore(currentAllocation, positions)
+
+  return clamp(Math.round(MAX_STYLE_FIT_SCORE + diversificationScore + simplicityScore), 0, 100)
 }

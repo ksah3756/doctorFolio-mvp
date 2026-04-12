@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
 import { ActionItem } from '@/components/ActionItem'
+import { ImprovementSheet } from '@/components/ImprovementSheet'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
-import { computeHealthScore } from '@/lib/healthScore'
+import { computeHealthScore, computeIdealScore } from '@/lib/healthScore'
 import { inferStyleKey } from '@/lib/investorProfile'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
 import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
@@ -64,6 +65,7 @@ export default function DiagnosisPage() {
   const [explanation, setExplanation] = useState<string | null>(null)
   const [explainLoading, setExplainLoading] = useState(false)
   const [explainError, setExplainError] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   useEffect(() => {
     const raw = sessionStorage.getItem(SESSION_KEYS.DIAGNOSIS)
@@ -118,7 +120,8 @@ export default function DiagnosisPage() {
   const isHealthy = diagnosis.problems.length === 0
   const target = diagnosis.targetAllocation
   const targetErrorMessage = getTargetAllocationErrorMessage(target)
-  const healthScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
+  const currentScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
+  const idealScore = computeIdealScore(diagnosis.currentAllocation, positions, desiredStyle)
 
   return (
     <div className={styles.wrap}>
@@ -139,7 +142,7 @@ export default function DiagnosisPage() {
         )}
         <div className={styles.healthScore}>
           <span className={styles.healthScoreLabel}>건강점수</span>
-          <strong className={styles.healthScoreValue}>{healthScore}점</strong>
+          <strong className={styles.healthScoreValue}>{currentScore}점</strong>
         </div>
         <AllocationBar current={diagnosis.currentAllocation} target={target} />
         {targetErrorMessage && (
@@ -164,6 +167,10 @@ export default function DiagnosisPage() {
             </div>
           </>
         )}
+        <button className={styles.improvementBtn} onClick={() => setSheetOpen(true)}>
+          포트폴리오 개선 보기
+          <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
+        </button>
 
         {/* 왜 이 조언인가요? */}
         <button className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`} onClick={toggleExplain}>
@@ -217,6 +224,14 @@ export default function DiagnosisPage() {
           ↩ 다시 진단하기
         </button>
       </div>
+      <ImprovementSheet
+        currentAllocation={diagnosis.currentAllocation}
+        targetAllocation={target}
+        currentScore={currentScore}
+        idealScore={idealScore}
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+      />
     </div>
   )
 }

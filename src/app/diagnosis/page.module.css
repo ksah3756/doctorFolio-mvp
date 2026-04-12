@@ -75,6 +75,30 @@
   overflow: hidden;
 }
 
+.improvementBtn {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(26, 35, 126, 0.08), rgba(57, 73, 171, 0.02));
+  border: 1px solid rgba(26, 35, 126, 0.14);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: -0.2px;
+}
+
+.improvementBtn:active {
+  background: linear-gradient(135deg, rgba(26, 35, 126, 0.14), rgba(57, 73, 171, 0.05));
+}
+
+.improvementBtnArrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
 .explainBtn {
   width: 100%;
   background: var(--surface);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeHealthScore } from './healthScore'
+import { computeHealthScore, computeIdealScore } from './healthScore'
 import type {
   AllocationBucket,
   AssetClass,
@@ -120,5 +120,31 @@ describe('computeHealthScore', () => {
 
   it('Simplicity: 보유 종목 수 20개 경계값을 반영한다', () => {
     expect(computeBoundaryScore(20)).toBe(97)
+  })
+})
+
+describe('computeIdealScore', () => {
+  it('현재 건강점수보다 낮지 않고 Style Fit 만점을 반영한다', () => {
+    const currentAllocation: Record<AllocationBucket, number> = {
+      '국내주식': 55,
+      '해외주식': 15,
+      '채권': 20,
+      '현금': 5,
+      '기타': 5,
+    }
+    const positions = [
+      createPosition(1, 55, '국내주식', '반도체'),
+      createPosition(2, 15, '해외주식', '미국주식'),
+      createPosition(3, 20, '채권', '채권 ETF'),
+      createPosition(4, 5, '기타', '기타'),
+      { ...createPosition(5, 5, '기타', '기타'), name: '현금', code: null, qty: 0, avgCost: 0, currentPrice: 0 },
+    ]
+
+    const currentScore = computeHealthScore(currentAllocation, TARGET, positions, 'balanced')
+    const idealScore = computeIdealScore(currentAllocation, positions, 'balanced')
+
+    expect(idealScore).toBeGreaterThanOrEqual(currentScore)
+    expect(idealScore).toBeLessThanOrEqual(100)
+    expect(idealScore - currentScore).toBeGreaterThan(0)
   })
 })
