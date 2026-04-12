@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
-import { ActionItem } from '@/components/ActionItem'
 import { ImprovementSheet } from '@/components/ImprovementSheet'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
 import { computeHealthScore, computeIdealScore } from '@/lib/healthScore'
@@ -122,6 +121,9 @@ export default function DiagnosisPage() {
   const targetErrorMessage = getTargetAllocationErrorMessage(target)
   const currentScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
   const idealScore = computeIdealScore(diagnosis.currentAllocation, positions, desiredStyle)
+  const scorePreview = idealScore > currentScore
+    ? `건강점수 ${currentScore}점 → ${idealScore}점`
+    : `건강점수 ${currentScore}점 기준으로 전체 비중 확인`
 
   return (
     <div className={styles.wrap}>
@@ -153,24 +155,28 @@ export default function DiagnosisPage() {
       </div>
 
       <div className={styles.body}>
-        {/* 문제 카드 */}
-        {diagnosis.problems.map((p, i) => (
-          <ProblemCard key={i} problem={p} index={i} />
-        ))}
+        <section className={styles.improvementSection} aria-label="포트폴리오 개선 요약">
+          {diagnosis.problems.length > 0 && (
+            <>
+              <div className={styles.sectionLabel}>개선 포인트</div>
+              <div className={styles.problemList}>
+                {diagnosis.problems.map((p, i) => (
+                  <ProblemCard key={i} problem={p} index={i} />
+                ))}
+              </div>
+            </>
+          )}
 
-        {/* 권장 조치 */}
-        {diagnosis.actions.length > 0 && (
-          <>
-            <div className={styles.sectionLabel}>권장 조치</div>
-            <div className={styles.actionCard}>
-              {diagnosis.actions.map((a, i) => <ActionItem key={i} action={a} />)}
+          <button className={styles.improvementBtn} onClick={() => setSheetOpen(true)}>
+            <div className={styles.improvementBtnText}>
+              <span className={styles.improvementBtnTitle}>포트폴리오 개선 보기</span>
+              <span className={styles.improvementBtnMeta}>
+                {scorePreview} · 현재/목표 비중 상세
+              </span>
             </div>
-          </>
-        )}
-        <button className={styles.improvementBtn} onClick={() => setSheetOpen(true)}>
-          포트폴리오 개선 보기
-          <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
-        </button>
+            <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
+          </button>
+        </section>
 
         {/* 왜 이 조언인가요? */}
         <button className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`} onClick={toggleExplain}>
