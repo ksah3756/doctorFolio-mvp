@@ -42,7 +42,7 @@ export interface Problem {
   ticker?: string            // concentration_stock 타입일 때
   sector?: string            // concentration_sector 타입일 때
   current: number            // 현재 % (소수점 1자리)
-  target: number             // 목표 또는 임계값 %
+  target: number             // 목표 비중 또는 집중 기준선 %
   label: string              // UI 표시용 한국어 제목
   description: string        // 1줄 설명
 }

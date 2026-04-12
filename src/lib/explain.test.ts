@@ -44,4 +44,24 @@ describe('buildExplanationPrompt', () => {
     expect(prompt).toContain('숫자를 반드시 사용할 것')
     expect(prompt).toContain('마지막 문장은 "실행 여부와 시점은 본인이 결정하세요."로 끝낼 것')
   })
+
+  it('uses 기준선 wording for concentration problems', () => {
+    const prompt = buildExplanationPrompt({
+      ...diagnosis,
+      problems: [
+        {
+          type: 'concentration_sector',
+          severity: 'medium',
+          sector: '반도체',
+          current: 55,
+          target: 50,
+          label: '반도체 섹터가 55%입니다',
+          description: '단일 섹터 50% 초과는 섹터 집중 위험입니다.',
+        },
+      ],
+    })
+
+    expect(prompt).toContain('- 반도체 섹터가 55%입니다: 현재 55%, 기준선 50%')
+    expect(prompt).not.toContain('목표 50%')
+  })
 })

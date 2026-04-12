@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
+import { ActionItem } from '@/components/ActionItem'
+import { SectorPieChart } from '@/components/SectorPieChart'
 import { ImprovementSheet } from '@/components/ImprovementSheet'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
 import { computeHealthScore, computeIdealScore } from '@/lib/healthScore'
 import { inferStyleKey } from '@/lib/investorProfile'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
 import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
+import { buildSectorAllocation } from '@/lib/sectorAllocation'
 import { SESSION_KEYS } from '@/lib/types'
 import type {
   DiagnosisResult,
@@ -119,6 +122,7 @@ export default function DiagnosisPage() {
   const isHealthy = diagnosis.problems.length === 0
   const target = diagnosis.targetAllocation
   const targetErrorMessage = getTargetAllocationErrorMessage(target)
+  const sectorSlices = buildSectorAllocation(positions)
   const currentScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
   const idealScore = computeIdealScore(diagnosis.currentAllocation, positions, desiredStyle)
   const scorePreview = idealScore > currentScore
@@ -177,6 +181,8 @@ export default function DiagnosisPage() {
             <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
           </button>
         </section>
+
+        {sectorSlices.length > 0 && <SectorPieChart slices={sectorSlices} />}
 
         {/* 왜 이 조언인가요? */}
         <button className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`} onClick={toggleExplain}>

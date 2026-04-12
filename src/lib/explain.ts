@@ -1,8 +1,13 @@
 import type { DiagnosisResult } from './types'
 
+function formatProblemTarget(problem: DiagnosisResult['problems'][number]): string {
+  const label = problem.type === 'drift' ? '목표' : '기준선'
+  return `${label} ${problem.target}%`
+}
+
 function summarizeProblems(diagnosis: DiagnosisResult): string {
   return diagnosis.problems
-    .map(problem => `- ${problem.label}: 현재 ${problem.current}%, 목표 ${problem.target}%`)
+    .map(problem => `- ${problem.label}: 현재 ${problem.current}%, ${formatProblemTarget(problem)}`)
     .join('\n')
 }
 

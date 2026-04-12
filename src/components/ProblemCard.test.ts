@@ -29,7 +29,7 @@ describe('ProblemCard', () => {
     expect(html).toContain('주식 비중이 높은 상태이므로 일부를 줄이거나 신규 자금을 활용하는 방법이 있습니다.')
   })
 
-  it('집중 문제는 권장 상한 기준으로 차이를 보여준다', () => {
+  it('집중 문제는 기준선 기준으로 차이를 보여준다', () => {
     const html = renderToStaticMarkup(
       createElement(ProblemCard, {
         index: 1,
@@ -47,8 +47,8 @@ describe('ProblemCard', () => {
 
     expect(html).toContain('02 · 섹터 집중')
     expect(html).toContain('주의')
-    expect(html).toContain('권장 상한')
-    expect(html).toContain('권장 상한보다 12%p 높음')
+    expect(html).toContain('기준선')
+    expect(html).toContain('기준선보다 12%p 높음')
     expect(html).toContain('단일 섹터 비중을 현재 62% → 50% 이하 수준으로 낮추는 것이 적절합니다.')
   })
 })

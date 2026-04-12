@@ -14,7 +14,7 @@ function getCategoryLabel(problem: Problem): string {
 }
 
 function getTargetLabel(problem: Problem): string {
-  return problem.type === 'drift' ? '목표' : '권장 상한'
+  return problem.type === 'drift' ? '목표' : '기준선'
 }
 
 function formatPercent(value: number): string {
