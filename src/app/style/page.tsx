@@ -8,7 +8,7 @@ import type { StyleKey, PortfolioPosition, TargetAllocation } from '@/lib/types'
 import styles from './page.module.css'
 
 const STYLE_KEYS: StyleKey[] = ['stable', 'balanced', 'growth', 'aggressive']
-const TARGET_FIELDS: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권']
+const TARGET_FIELDS: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권', '현금']
 
 function readConfirmedPositions(): PortfolioPosition[] {
   if (typeof window === 'undefined') return []
@@ -35,6 +35,7 @@ function readStoredTarget(): TargetAllocation {
       '국내주식': typeof parsed['국내주식'] === 'number' ? parsed['국내주식'] : DEFAULT_TARGET['국내주식'],
       '해외주식': typeof parsed['해외주식'] === 'number' ? parsed['해외주식'] : DEFAULT_TARGET['해외주식'],
       '채권': typeof parsed['채권'] === 'number' ? parsed['채권'] : DEFAULT_TARGET['채권'],
+      '현금': typeof parsed['현금'] === 'number' ? parsed['현금'] : DEFAULT_TARGET['현금'],
     }
   } catch {
     return { ...DEFAULT_TARGET }
@@ -151,7 +152,7 @@ export default function StylePage() {
                   key={key}
                   role="radio"
                   aria-checked={isSelected}
-                  aria-label={`${p.label}: ${p.desc}. 국내 ${p.target['국내주식']}, 해외 ${p.target['해외주식']}, 채권 ${p.target['채권']}`}
+                  aria-label={`${p.label}: ${p.desc}. 국내 ${p.target['국내주식']}, 해외 ${p.target['해외주식']}, 채권 ${p.target['채권']}, 현금 ${p.target['현금']}`}
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
                   onClick={() => {
                     setSelected(key)
@@ -163,7 +164,7 @@ export default function StylePage() {
                   <span className={styles.cardLabel}>{p.label}</span>
                   <span className={styles.cardDesc}>{p.desc}</span>
                   <span className={styles.cardAlloc}>
-                    국내 {p.target['국내주식']} · 해외 {p.target['해외주식']} · 채권 {p.target['채권']}
+                    국내 {p.target['국내주식']} · 해외 {p.target['해외주식']} · 채권 {p.target['채권']} · 현금 {p.target['현금']}
                   </span>
                 </button>
               )

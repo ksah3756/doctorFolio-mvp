@@ -23,8 +23,8 @@ const diagnosis: DiagnosisResult = {
       estimatedAmount: 210000,
     },
   ],
-  currentAllocation: { '국내주식': 80, '해외주식': 10, '채권': 10, '기타': 0 },
-  targetAllocation: { '국내주식': 40, '해외주식': 30, '채권': 30 },
+  currentAllocation: { '국내주식': 80, '해외주식': 10, '채권': 10, '현금': 0, '기타': 0 },
+  targetAllocation: { '국내주식': 40, '해외주식': 30, '채권': 30, '현금': 0 },
   totalValue: 1000000,
 }
 

@@ -13,25 +13,25 @@ export const PRESETS: Record<StyleKey, Preset> = {
     label: '안정형',
     emoji: '🛡️',
     desc: '원금 지키는 게 제일 중요해요',
-    target: { '국내주식': 20, '해외주식': 10, '채권': 70 },
+    target: { '국내주식': 20, '해외주식': 10, '채권': 55, '현금': 15 },
   },
   balanced: {
     label: '균형형',
     emoji: '⚖️',
     desc: '어느 정도 손실은 괜찮아요',
-    target: { '국내주식': 30, '해외주식': 20, '채권': 50 },
+    target: { '국내주식': 30, '해외주식': 20, '채권': 40, '현금': 10 },
   },
   growth: {
     label: '성장형',
     emoji: '🚀',
     desc: '장기적으로 크게 키울래요',
-    target: { '국내주식': 40, '해외주식': 30, '채권': 30 },
+    target: { '국내주식': 40, '해외주식': 30, '채권': 25, '현금': 5 },
   },
   aggressive: {
     label: '공격형',
     emoji: '⚡',
     desc: '리스크 감수하고 최대로',
-    target: { '국내주식': 55, '해외주식': 35, '채권': 10 },
+    target: { '국내주식': 55, '해외주식': 35, '채권': 10, '현금': 0 },
   },
 }
 
@@ -56,11 +56,11 @@ export function inferStyleKey(positions: PortfolioPosition[]): StyleKey {
   const stockPct = stockValue / total
 
   // 임계값은 각 프리셋 target이 자기 자신으로 round-trip되도록 설정
-  // stable(20/10/70): bond>60% → stable
-  // balanced(30/20/50): bond=50% → balanced
-  // growth(40/30/30): stock=70% → growth
-  // aggressive(55/35/10): stock=90% → aggressive
-  if (bondPct > 0.6) return 'stable'
+  // stable(20/10/55/15): bond=55% → stable
+  // balanced(30/20/40/10): bond=40% → balanced
+  // growth(40/30/25/5): stock=70% → growth
+  // aggressive(55/35/10/0): stock=90% → aggressive
+  if (bondPct >= 0.55) return 'stable'
   if (stockPct >= 0.85) return 'aggressive'
   if (stockPct >= 0.65) return 'growth'
   return 'balanced'

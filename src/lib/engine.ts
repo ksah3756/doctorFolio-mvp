@@ -1,7 +1,7 @@
 // src/lib/engine.ts
 import type {
   PortfolioPosition, TargetAllocation, DiagnosisResult,
-  Problem, Action, AssetClass, Severity,
+  Problem, Action, AssetClass, Severity, AllocationBucket,
 } from './types'
 
 const DRIFT_THRESHOLD = 10        // pp 이상 이탈 시 문제
@@ -18,13 +18,17 @@ function groupByAssetClass(positions: PortfolioPosition[]): Record<AssetClass, n
   return result
 }
 
+function isCashPosition(position: PortfolioPosition): boolean {
+  return position.assetClass === '기타' && position.name === '현금'
+}
+
 function buildDriftProblems(
-  current: Record<AssetClass, number>,
+  current: Record<AllocationBucket, number>,
   target: TargetAllocation,
   total: number,
 ): Problem[] {
   const problems: Problem[] = []
-  const assetClasses: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권']
+  const assetClasses: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권', '현금']
 
   for (const ac of assetClasses) {
     const currentPct = pct(current[ac], total)
@@ -35,11 +39,11 @@ function buildDriftProblems(
 
     const over = diff > 0
     const severity: Severity = Math.abs(diff) >= 20 ? 'high' : 'medium'
-    const labelMap: Record<AssetClass, string> = {
+    const labelMap: Record<keyof TargetAllocation, string> = {
       '국내주식': '국내주식',
       '해외주식': '해외주식',
-      '채권': '채권·기타',
-      '기타': '기타',
+      '채권': '채권',
+      '현금': '현금',
     }
 
     problems.push({
@@ -66,6 +70,8 @@ function buildConcentrationProblems(positions: PortfolioPosition[], total: numbe
 
   // 단일 종목 — 30% 초과 시 집중 위험
   for (const p of positions) {
+    if (isCashPosition(p)) continue
+
     const currentPct = pct(p.value, total)
     if (currentPct > CONCENTRATION_STOCK) {
       problems.push({
@@ -106,18 +112,19 @@ function buildConcentrationProblems(positions: PortfolioPosition[], total: numbe
 
 function buildActions(
   positions: PortfolioPosition[],
-  current: Record<AssetClass, number>,
+  current: Record<AllocationBucket, number>,
   target: TargetAllocation,
   total: number,
 ): Action[] {
   const actions: Action[] = []
 
-  for (const ac of ['국내주식', '해외주식', '채권'] as Array<keyof TargetAllocation>) {
+  for (const ac of ['국내주식', '해외주식', '채권', '현금'] as Array<keyof TargetAllocation>) {
     const currentPct = pct(current[ac], total)
     const targetPct = target[ac]
     const diff = currentPct - targetPct
 
     if (Math.abs(diff) < DRIFT_THRESHOLD) continue
+    if (ac === '현금') continue
 
     const adjustAmount = Math.abs(diff / 100) * total
     const classPositions = positions.filter(p => p.assetClass === ac)
@@ -173,7 +180,7 @@ export function runDiagnosis(
     return {
       problems: [],
       actions: [],
-      currentAllocation: { '국내주식': 0, '해외주식': 0, '채권': 0, '기타': 0 },
+      currentAllocation: { '국내주식': 0, '해외주식': 0, '채권': 0, '현금': 0, '기타': 0 },
       targetAllocation: target,
       totalValue: 0,
     }
@@ -181,21 +188,29 @@ export function runDiagnosis(
 
   const total = positions.reduce((s, p) => s + p.value, 0)
   const byAssetClass = groupByAssetClass(positions)
+  const cashValue = positions.filter(isCashPosition).reduce((sum, position) => sum + position.value, 0)
+  const allocationAmounts: Record<AllocationBucket, number> = {
+    '국내주식': byAssetClass['국내주식'],
+    '해외주식': byAssetClass['해외주식'],
+    '채권': byAssetClass['채권'],
+    '현금': cashValue,
+    '기타': Math.max(byAssetClass['기타'] - cashValue, 0),
+  }
+  const currentAllocation = {
+    '국내주식': pct(allocationAmounts['국내주식'], total),
+    '해외주식': pct(allocationAmounts['해외주식'], total),
+    '채권': pct(allocationAmounts['채권'], total),
+    '현금': pct(allocationAmounts['현금'], total),
+    '기타': pct(allocationAmounts['기타'], total),
+  }
 
-  const driftProblems = buildDriftProblems(byAssetClass, target, total)
+  const driftProblems = buildDriftProblems(allocationAmounts, target, total)
   const concProblems = buildConcentrationProblems(positions, total)
   const problems = [...concProblems.filter(p => p.type === 'concentration_stock'), ...driftProblems, ...concProblems.filter(p => p.type === 'concentration_sector')]
 
-  const currentAllocation = {
-    '국내주식': pct(byAssetClass['국내주식'], total),
-    '해외주식': pct(byAssetClass['해외주식'], total),
-    '채권': pct(byAssetClass['채권'], total),
-    '기타': pct(byAssetClass['기타'], total),
-  }
-
   return {
     problems,
-    actions: buildActions(positions, byAssetClass, target, total),
+    actions: buildActions(positions, allocationAmounts, target, total),
     currentAllocation,
     targetAllocation: target,
     totalValue: total,

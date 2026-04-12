@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { runDiagnosis } from './engine'
 import type { PortfolioPosition, TargetAllocation } from './types'
 
-const TARGET: TargetAllocation = { '국내주식': 40, '해외주식': 30, '채권': 30 }
+const TARGET: TargetAllocation = { '국내주식': 35, '해외주식': 25, '채권': 30, '현금': 10 }
 
 function makePos(overrides: Partial<PortfolioPosition> & Pick<PortfolioPosition, 'value' | 'assetClass'>): PortfolioPosition {
   return {
@@ -30,7 +30,7 @@ describe('runDiagnosis', () => {
     const driftProblem = result.problems.find(p => p.type === 'drift' && p.assetClass === '국내주식')
     expect(driftProblem).toBeDefined()
     expect(driftProblem!.current).toBe(80)
-    expect(driftProblem!.target).toBe(40)
+    expect(driftProblem!.target).toBe(35)
     expect(driftProblem!.severity).toBe('high')
   })
 
@@ -59,12 +59,13 @@ describe('runDiagnosis', () => {
   })
 
   it('포트폴리오 양호 (drift < 10pp, 단일 종목 30% 이하) → problems 빈 배열', () => {
-    // 국내주식 40%를 2종목으로 분산 (각 20%), 해외 30%, 채권 30%
+    // 국내주식 40%(각 20%), 해외 25%, 채권 25%, 현금 10%
     const positions = [
       makePos({ value: 2_000_000, assetClass: '국내주식', name: '삼성전자' }),
       makePos({ value: 2_000_000, assetClass: '국내주식', name: 'SK하이닉스' }),
-      makePos({ value: 3_000_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
-      makePos({ value: 3_000_000, assetClass: '채권',     name: 'TIGER 채권' }),
+      makePos({ value: 2_500_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
+      makePos({ value: 2_500_000, assetClass: '채권',     name: 'TIGER 채권' }),
+      makePos({ value: 1_000_000, assetClass: '기타', name: '현금', code: null, qty: 0, avgCost: 0, currentPrice: 0 }),
     ]
     const result = runDiagnosis(positions, TARGET)
     expect(result.problems).toHaveLength(0)
@@ -76,16 +77,34 @@ describe('runDiagnosis', () => {
     expect(result.actions).toHaveLength(0)
   })
 
-  it('기타 자산은 currentAllocation 기타 비중에 포함된다', () => {
+  it('현금은 currentAllocation 현금 비중으로 분리되고 기타 자산은 기타에 남는다', () => {
     const positions = [
-      makePos({ value: 8_000_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 6_000_000, assetClass: '국내주식', name: '삼성전자' }),
       makePos({ value: 2_000_000, assetClass: '기타', name: '현금', code: null, qty: 0, avgCost: 0, currentPrice: 0 }),
+      makePos({ value: 2_000_000, assetClass: '기타', name: '금 ETF', code: '132030' }),
     ]
 
     const result = runDiagnosis(positions, TARGET)
 
-    expect(result.currentAllocation['국내주식']).toBe(80)
+    expect(result.currentAllocation['국내주식']).toBe(60)
+    expect(result.currentAllocation['현금']).toBe(20)
     expect(result.currentAllocation['기타']).toBe(20)
+  })
+
+  it('현금 비중 이탈은 drift 문제로 감지한다', () => {
+    const positions = [
+      makePos({ value: 4_000_000, assetClass: '국내주식', name: '삼성전자' }),
+      makePos({ value: 2_000_000, assetClass: '해외주식', name: 'TIGER 미국S&P500' }),
+      makePos({ value: 1_000_000, assetClass: '채권', name: 'TIGER 채권' }),
+      makePos({ value: 3_000_000, assetClass: '기타', name: '현금', code: null, qty: 0, avgCost: 0, currentPrice: 0 }),
+    ]
+
+    const result = runDiagnosis(positions, TARGET)
+    const cashProblem = result.problems.find(p => p.type === 'drift' && p.assetClass === '현금')
+
+    expect(cashProblem).toBeDefined()
+    expect(cashProblem!.current).toBe(30)
+    expect(cashProblem!.target).toBe(10)
   })
 
   it('국내주식만 100% → 액션에 매도 항목 포함', () => {

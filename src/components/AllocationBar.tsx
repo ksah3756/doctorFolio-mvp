@@ -1,16 +1,17 @@
 // src/components/AllocationBar.tsx
-import type { AssetClass, TargetAllocation } from '@/lib/types'
+import type { AllocationBucket, TargetAllocation } from '@/lib/types'
 import styles from './AllocationBar.module.css'
 
 interface Props {
-  current: Record<AssetClass, number>
+  current: Record<AllocationBucket, number>
   target: TargetAllocation
 }
 
-const ROWS: { key: keyof TargetAllocation; label: string; currentKeys: AssetClass[] }[] = [
+const ROWS: { key: keyof TargetAllocation; label: string; currentKeys: AllocationBucket[] }[] = [
   { key: '국내주식', label: '국내주식', currentKeys: ['국내주식'] },
   { key: '해외주식', label: '해외주식', currentKeys: ['해외주식'] },
-  { key: '채권', label: '채권·기타', currentKeys: ['채권', '기타'] },
+  { key: '채권', label: '채권', currentKeys: ['채권'] },
+  { key: '현금', label: '현금', currentKeys: ['현금'] },
 ]
 
 export function AllocationBar({ current, target }: Props) {

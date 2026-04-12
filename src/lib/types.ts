@@ -19,14 +19,18 @@ export interface TargetAllocation {
   '국내주식': number  // 0-100 (%)
   '해외주식': number
   '채권': number
+  '현금': number
   // 합계 = 100
 }
 
 export const DEFAULT_TARGET: TargetAllocation = {
-  '국내주식': 40,
-  '해외주식': 30,
+  '국내주식': 35,
+  '해외주식': 25,
   '채권': 30,
+  '현금': 10,
 }
+
+export type AllocationBucket = AssetClass | '현금'
 
 export type ProblemType = 'drift' | 'concentration_stock' | 'concentration_sector'
 export type Severity = 'high' | 'medium'
@@ -34,7 +38,7 @@ export type Severity = 'high' | 'medium'
 export interface Problem {
   type: ProblemType
   severity: Severity
-  assetClass?: AssetClass   // drift 타입일 때
+  assetClass?: AllocationBucket   // drift 타입일 때
   ticker?: string            // concentration_stock 타입일 때
   sector?: string            // concentration_sector 타입일 때
   current: number            // 현재 % (소수점 1자리)
@@ -55,7 +59,7 @@ export interface Action {
 export interface DiagnosisResult {
   problems: Problem[]        // 빈 배열 → "포트폴리오 양호"
   actions: Action[]
-  currentAllocation: Record<AssetClass, number>  // 실제 %
+  currentAllocation: Record<AllocationBucket, number>  // 실제 %
   targetAllocation: TargetAllocation
   totalValue: number
 }

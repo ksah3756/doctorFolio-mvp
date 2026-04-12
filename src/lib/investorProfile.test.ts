@@ -62,6 +62,7 @@ describe('PRESETS round-trip', () => {
         pos('국내주식', t['국내주식']),
         pos('해외주식', t['해외주식']),
         pos('채권', t['채권']),
+        pos('기타', t['현금']),
       ]
       expect(inferStyleKey(positions), `${key} round-trip`).toBe(key)
     }
@@ -73,7 +74,7 @@ describe('PRESETS', () => {
     const keys = ['stable', 'balanced', 'growth', 'aggressive'] as const
     for (const key of keys) {
       const t = PRESETS[key].target
-      expect(t['국내주식'] + t['해외주식'] + t['채권']).toBe(100)
+      expect(t['국내주식'] + t['해외주식'] + t['채권'] + t['현금']).toBe(100)
     }
   })
 
