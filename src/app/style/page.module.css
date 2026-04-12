@@ -151,21 +151,130 @@
   letter-spacing: 0.01em;
 }
 
-/* CTA */
-.cta {
+.partDivider {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 20px 20px 0;
+  gap: 12px;
+  padding: 20px 16px 18px;
 }
 
-.skipBtn {
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: var(--text-3);
-  text-decoration: underline;
-  padding: 4px;
+.partDividerLine {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
 }
-.skipBtn:active { color: var(--text-2); }
+
+.partDividerLabel {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-3);
+}
+
+.targetSection {
+  padding: 0 16px 108px;
+}
+
+.targetHeader {
+  margin-bottom: 12px;
+}
+
+.targetTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+}
+
+.targetHint {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.sliderList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sliderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.sliderMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sliderLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.sliderValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--navy);
+}
+
+.targetSummary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.targetSummaryValid {
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.targetSummaryInvalid {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.targetSummaryLabel {
+  font-weight: 600;
+}
+
+.targetSummaryValue {
+  font-size: 16px;
+}
+
+.targetSummaryMessage {
+  margin-left: auto;
+  text-align: right;
+}
+
+@media (min-width: 768px) {
+  .partDivider {
+    padding: 24px 32px 20px;
+  }
+
+  .targetSection {
+    padding: 0 32px 108px;
+  }
+}

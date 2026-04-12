@@ -72,7 +72,7 @@ export default function UploadPage() {
       setSteps(prev => prev.map(s => ({ ...s, active: false, done: true })))
       sessionStorage.setItem(SESSION_KEYS.RAW_POSITIONS, JSON.stringify(positions))
       await new Promise(r => setTimeout(r, 400))
-      router.push('/style')
+      router.push('/confirm')
     } catch (e) {
       setError((e as Error).message)
       setLoading(false)
