@@ -20,7 +20,7 @@
   margin-bottom: 4px;
 }
 .bigNum em { font-style: normal; font-size: 18px; font-weight: 700; color: rgba(255,255,255,.7); vertical-align: middle; }
-.subline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 20px; }
+.subline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 10px; }
 .targetError {
   margin-top: 10px;
   font-size: 12px;
@@ -29,9 +29,33 @@
 }
 
 /* 양호 상태 */
-.healthy { margin-bottom: 20px; }
+.healthy { margin-bottom: 12px; }
 .checkIcon { font-size: 32px; color: var(--green); margin-bottom: 8px; }
 .healthyTitle { font-size: 22px; font-weight: 800; color: #fff; }
+
+.healthScore {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.healthScoreLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.72);
+}
+
+.healthScoreValue {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
 
 .body { padding: 14px 16px 100px; display: flex; flex-direction: column; gap: 8px; }
 
