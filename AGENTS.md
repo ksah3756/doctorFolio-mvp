@@ -17,12 +17,11 @@ Rules:
 | Role | Owner | Description |
 |------|-------|-------------|
 | Planner | Claude | 이슈 생성 및 수용 기준 작성 |
-| Implementer | Codex | 구현 → `pnpm verify` → 커밋 → `discord-review-notify`로 완료+Claude 리뷰 요청 |
+| Implementer | Codex | 구현 → `pnpm verify` → `discord-review-notify`로 완료+Claude 리뷰 요청 |
 | Reviewer | Claude | Codex 구현물 검토 → REVIEW-N.md 작성 → P1 있으면 Codex 재트리거 |
 | Git Manager | Claude | APPROVED 후 PR 생성 및 머지 |
 
 - Codex 시작: `omc team 1:codex "..."` (worktree에서 실행)
-- Codex는 `pnpm verify` 통과 후 Claude 리뷰 요청 전에 반드시 현재 작업만 의도적으로 커밋한다.
 
 ## Work Unit & Worktree Workflow
 
@@ -82,6 +81,13 @@ src/
 **Tidy First:** structural changes (rename, extract) and behavioral changes (new logic) must be separate commits.
 - Commit prefixes: `refactor:` (structural), `feat:` / `fix:` (behavioral)
 - Only commit when all Vitest suites pass and TypeScript shows zero errors.
+
+**Commit discipline:**
+- **단일 책임:** 한 커밋에 하나의 변경만. 타입 추가, 엔진 수정, UI 수정이 있으면 최소 3개 커밋으로 분리한다.
+- **의도 중심 메시지:** "무엇을 바꿨나"가 아니라 "왜 바꿨나 / 무엇을 해결했나"를 적는다.
+  - ❌ `feat: AllocationBucket 타입 추가 및 engine.ts 수정`
+  - ✅ `feat: 현금을 기타에서 분리해 drift 진단 정확도 개선`
+- 커밋 메시지는 Discord 리뷰 요청 알림에 그대로 노출되므로 리뷰어가 구현 의도를 파악할 수 있게 작성한다.
 
 **Refactor when:** file > 200 lines · function > 50 lines · props drill 3+ levels · same code in 3+ places
 
