@@ -2,13 +2,19 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { runDiagnosis } from '@/lib/engine'
-import { PRESETS, inferStyleKey } from '@/lib/investorProfile'
+import { PRESETS, QUIZ_QUESTIONS, inferStyleKey, scoreToStyleKey } from '@/lib/investorProfile'
 import { DEFAULT_TARGET, SESSION_KEYS } from '@/lib/types'
 import type { StyleKey, PortfolioPosition, TargetAllocation } from '@/lib/types'
 import styles from './page.module.css'
 
 const STYLE_KEYS: StyleKey[] = ['stable', 'balanced', 'growth', 'aggressive']
 const TARGET_FIELDS: Array<keyof TargetAllocation> = ['국내주식', '해외주식', '채권', '현금']
+
+function findStyleKeyByTarget(target: TargetAllocation): StyleKey | null {
+  return STYLE_KEYS.find(styleKey =>
+    TARGET_FIELDS.every(assetClass => PRESETS[styleKey].target[assetClass] === target[assetClass]),
+  ) ?? null
+}
 
 function readConfirmedPositions(): PortfolioPosition[] {
   if (typeof window === 'undefined') return []
@@ -69,8 +75,12 @@ export default function StylePage() {
     if (typeof window === 'undefined') return false
     return sessionStorage.getItem(SESSION_KEYS.CONFIRMED) !== null
   })
-  const [selected, setSelected] = useState<StyleKey | null>(null)
+  const [selected, setSelected] = useState<StyleKey | null>(() => findStyleKeyByTarget(readStoredTarget()))
   const [target, setTarget] = useState<TargetAllocation>(() => readStoredTarget())
+  const [quizMode, setQuizMode] = useState(false)
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [quizAnswers, setQuizAnswers] = useState<Array<number | null>>(() => QUIZ_QUESTIONS.map(() => null))
+  const [quizResult, setQuizResult] = useState<StyleKey | null>(null)
 
   useEffect(() => {
     if (!loaded) router.replace('/confirm')
@@ -83,7 +93,35 @@ export default function StylePage() {
   const allocationDesc = getAllocationDesc(positions)
   const targetSum = TARGET_FIELDS.reduce((sum, assetClass) => sum + target[assetClass], 0)
   const isTargetBalanced = targetSum === 100
+  const canProceed = selected !== null && isTargetBalanced
   const isSameStyle = TARGET_FIELDS.every(assetClass => target[assetClass] === currentPreset.target[assetClass])
+  const activeQuestion = QUIZ_QUESTIONS[currentQuestion]
+  const selectedChoice = quizAnswers[currentQuestion]
+
+  function handleSelectStyle(styleKey: StyleKey) {
+    setSelected(styleKey)
+    setTarget({ ...PRESETS[styleKey].target })
+  }
+
+  function handleStartQuiz() {
+    setQuizMode(true)
+    setCurrentQuestion(0)
+    setQuizAnswers(QUIZ_QUESTIONS.map(() => null))
+    setQuizResult(null)
+  }
+
+  function handleQuizChoice(score: number) {
+    setQuizAnswers(prev => prev.map((value, index) => (index === currentQuestion ? score : value)))
+  }
+
+  function handleQuizComplete() {
+    const totalScore = quizAnswers.reduce<number>((sum, score) => sum + (score ?? 0), 0)
+    const styleKey = scoreToStyleKey(totalScore)
+    handleSelectStyle(styleKey)
+    setQuizResult(styleKey)
+    setQuizMode(false)
+    setCurrentQuestion(0)
+  }
 
   function moveToDiagnosis(target: typeof DEFAULT_TARGET) {
     sessionStorage.setItem(SESSION_KEYS.TARGET, JSON.stringify(target))
@@ -97,16 +135,12 @@ export default function StylePage() {
   }
 
   function handleNext() {
-    if (!isTargetBalanced) return
+    if (!selected || !isTargetBalanced) return
 
-    if (selected) {
-      sessionStorage.setItem(
-        SESSION_KEYS.INVESTOR_PROFILE,
-        JSON.stringify({ currentStyle, desiredStyle: selected }),
-      )
-    } else {
-      sessionStorage.removeItem(SESSION_KEYS.INVESTOR_PROFILE)
-    }
+    sessionStorage.setItem(
+      SESSION_KEYS.INVESTOR_PROFILE,
+      JSON.stringify({ currentStyle, desiredStyle: selected }),
+    )
 
     moveToDiagnosis(target)
   }
@@ -132,6 +166,82 @@ export default function StylePage() {
       <div className={styles.body}>
         <div className={styles.sectionLabel}>앞으로 어떻게 투자하고 싶으세요?</div>
 
+        {quizResult && !quizMode && (
+          <div className={styles.quizResult} role="status">
+            {PRESETS[quizResult].label}이에요 {PRESETS[quizResult].emoji} — 결과가 반영됐어요
+          </div>
+        )}
+
+        <div className={styles.quizEntry}>
+          <div>
+            <strong className={styles.quizEntryTitle}>어떤 성향인지 확인해볼까요?</strong>
+            <p className={styles.quizEntryDesc}>5개의 질문에 답하면 추천 성향을 바로 반영해드려요.</p>
+          </div>
+          <button className={styles.quizEntryButton} type="button" onClick={handleStartQuiz}>
+            투자 성향 퀴즈
+          </button>
+        </div>
+
+        {quizMode && (
+          <section className={styles.quizWrap} aria-labelledby="quiz-title">
+            <div className={styles.quizProgress}>
+              <span id="quiz-title" className={styles.quizProgressLabel}>투자 성향 퀴즈</span>
+              <span className={styles.quizProgressStep}>{currentQuestion + 1} / {QUIZ_QUESTIONS.length}</span>
+            </div>
+
+            <h2 className={styles.quizQuestion}>{activeQuestion.question}</h2>
+
+            <div className={styles.quizChoices} role="radiogroup" aria-label={activeQuestion.question}>
+              {activeQuestion.choices.map(choice => {
+                const isActive = selectedChoice === choice.score
+                return (
+                  <button
+                    key={`${activeQuestion.question}-${choice.label}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                    className={`${styles.quizChoice} ${isActive ? styles.quizChoiceSelected : ''}`}
+                    onClick={() => handleQuizChoice(choice.score)}
+                  >
+                    {choice.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className={styles.quizNav}>
+              <button
+                type="button"
+                className={styles.quizNavButton}
+                onClick={() => setCurrentQuestion(prev => Math.max(prev - 1, 0))}
+                disabled={currentQuestion === 0}
+              >
+                이전
+              </button>
+
+              {currentQuestion < QUIZ_QUESTIONS.length - 1 ? (
+                <button
+                  type="button"
+                  className={styles.quizNavButtonPrimary}
+                  onClick={() => setCurrentQuestion(prev => prev + 1)}
+                  disabled={selectedChoice === null}
+                >
+                  다음
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.quizNavButtonPrimary}
+                  onClick={handleQuizComplete}
+                  disabled={selectedChoice === null}
+                >
+                  완료
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
         {isSameStyle && (
           <div className={styles.sameBanner} role="status">
             지금 투자 방향이 목표와 일치해요 👍
@@ -154,10 +264,7 @@ export default function StylePage() {
                   aria-checked={isSelected}
                   aria-label={`${p.label}: ${p.desc}. 국내 ${p.target['국내주식']}, 해외 ${p.target['해외주식']}, 채권 ${p.target['채권']}, 현금 ${p.target['현금']}`}
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
-                  onClick={() => {
-                    setSelected(key)
-                    setTarget(PRESETS[key].target)
-                  }}
+                  onClick={() => handleSelectStyle(key)}
                 >
                   {isSelected && <span className={styles.check} aria-hidden="true">✓</span>}
                   <span className={styles.cardEmoji}>{p.emoji}</span>
@@ -171,6 +278,12 @@ export default function StylePage() {
             })}
           </div>
         </div>
+
+        {!selected && (
+          <p className={styles.selectionRequired} role="status">
+            투자 성향을 먼저 선택하거나 퀴즈를 완료해주세요.
+          </p>
+        )}
 
         <section className={styles.targetSection}>
           <div className={styles.targetHeader}>
@@ -214,7 +327,7 @@ export default function StylePage() {
         <div className="fixed-cta">
           <button
             className="btn-primary"
-            disabled={!isTargetBalanced}
+            disabled={!canProceed}
             onClick={handleNext}
           >
             다음 →
