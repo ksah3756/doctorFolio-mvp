@@ -166,6 +166,73 @@ export default function ConfirmPage() {
   const targetSum = TARGET_FIELDS.reduce((sum, assetClass) => sum + target[assetClass], 0)
   const isTargetBalanced = targetSum === 100
   const hasPositions = positions.length > 0
+  const cashSection = hasPositions ? (
+    <section className={styles.cashSection}>
+      <label className={styles.cashInputWrap}>
+        <span className={styles.cashLabel}>보유 현금 (선택)</span>
+        <span className={styles.cashHint}>진단에 함께 반영할 현금이 있으면 입력하세요.</span>
+        <div className={styles.cashInputRow}>
+          <input
+            className={styles.cashInput}
+            inputMode="numeric"
+            value={cashInput}
+            onChange={e => handleCashChange(e.target.value)}
+            placeholder="0"
+            aria-label="보유 현금 (선택)"
+          />
+          <span className={styles.cashUnit}>원</span>
+        </div>
+      </label>
+    </section>
+  ) : null
+  const targetSection = hasPositions ? (
+    <>
+      <div className={styles.partDivider}>
+        <hr className={styles.partDividerLine} />
+        <span className={styles.partDividerLabel}>지금 가진 것 → 앞으로 원하는 것</span>
+        <hr className={styles.partDividerLine} />
+      </div>
+
+      <section className={styles.targetSection}>
+        <div className={styles.targetHeader}>
+          <h2 className={styles.targetTitle}>목표 배분 조정</h2>
+          <p className={styles.targetHint}>원하는 비중으로 슬라이더를 조정한 뒤 진단을 시작하세요.</p>
+        </div>
+
+        <div className={styles.sliderList}>
+          {TARGET_FIELDS.map(assetClass => (
+            <label key={assetClass} className={styles.sliderRow}>
+              <div className={styles.sliderMeta}>
+                <span className={styles.sliderLabel}>{assetClass}</span>
+                <span className={styles.sliderValue}>{target[assetClass]}%</span>
+              </div>
+              <input
+                className={styles.slider}
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={target[assetClass]}
+                onChange={e => handleTargetChange(assetClass, Number(e.target.value))}
+              />
+            </label>
+          ))}
+        </div>
+
+        <div
+          className={`${styles.targetSummary} ${
+            isTargetBalanced ? styles.targetSummaryValid : styles.targetSummaryInvalid
+          }`}
+        >
+          <span className={styles.targetSummaryLabel}>합계</span>
+          <strong className={styles.targetSummaryValue}>{targetSum}%</strong>
+          <span className={styles.targetSummaryMessage}>
+            {isTargetBalanced ? '합계가 100%입니다.' : '합계가 100%가 되도록 조정해주세요.'}
+          </span>
+        </div>
+      </section>
+    </>
+  ) : null
 
   return (
     <div className={styles.wrap}>
@@ -180,37 +247,41 @@ export default function ConfirmPage() {
 
       {isDesktop ? (
         /* 768px+ 테이블 뷰 */
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.thead}>
-                <th className={styles.th}>종목명</th>
-                <th className={styles.th}>자산군</th>
-                <th className={styles.th}>섹터</th>
-                <th className={`${styles.th} ${styles.thNum}`}>보유금액</th>
-                <th className={`${styles.th} ${styles.thNum}`}>비중</th>
-                <th className={`${styles.th} ${styles.thNum}`}>매입가</th>
-                <th className={`${styles.th} ${styles.thNum}`}>현재가</th>
-                <th className={styles.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {positions.map(p => (
-                <ConfirmCard
-                  key={p.id}
-                  asRow
-                  position={p}
-                  pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
-                  isDuplicate={(nameCounts[p.name] ?? 0) > 1}
-                  onDelete={handleDelete}
-                  onAssetClassChange={handleAssetClassChange}
-                  onSectorChange={handleSectorChange}
-                  onFieldChange={handleFieldChange}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr className={styles.thead}>
+                  <th className={styles.th}>종목명</th>
+                  <th className={styles.th}>자산군</th>
+                  <th className={styles.th}>섹터</th>
+                  <th className={`${styles.th} ${styles.thNum}`}>보유금액</th>
+                  <th className={`${styles.th} ${styles.thNum}`}>비중</th>
+                  <th className={`${styles.th} ${styles.thNum}`}>매입가</th>
+                  <th className={`${styles.th} ${styles.thNum}`}>현재가</th>
+                  <th className={styles.th}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {positions.map(p => (
+                  <ConfirmCard
+                    key={p.id}
+                    asRow
+                    position={p}
+                    pct={totalValue > 0 ? Math.round((p.value / totalValue) * 1000) / 10 : 0}
+                    isDuplicate={(nameCounts[p.name] ?? 0) > 1}
+                    onDelete={handleDelete}
+                    onAssetClassChange={handleAssetClassChange}
+                    onSectorChange={handleSectorChange}
+                    onFieldChange={handleFieldChange}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {cashSection}
+          {targetSection}
+        </>
       ) : (
         /* 모바일 카드 뷰 */
         <div className={styles.scroll}>
@@ -227,92 +298,25 @@ export default function ConfirmPage() {
             />
           ))}
 
-        {hasDuplicates && (
-          <div className={styles.dupNotice}>
-            <strong>같은 종목이 여러 줄 있습니다.</strong><br />
-            서로 다른 계좌(일반계좌·ISA)라면 그대로 두세요. 같은 계좌를 두 번 올렸다면 하나를 삭제해주세요.
-          </div>
-        )}
-
-        {positions.length === 0 && (
-          <div className={styles.empty}>
-            <p>인식된 종목이 없습니다.</p>
-            <p>주식잔고 화면을 캡처했는지 확인해주세요.</p>
-            <button className="btn-primary" style={{ marginTop: 16 }} onClick={() => router.push('/')}>
-              다시 업로드하기
-            </button>
-          </div>
-        )}
-      </div>
-      )}
-
-      {hasPositions && (
-        <section className={styles.cashSection}>
-          <label className={styles.cashInputWrap}>
-            <span className={styles.cashLabel}>보유 현금 (선택)</span>
-            <span className={styles.cashHint}>진단에 함께 반영할 현금이 있으면 입력하세요.</span>
-            <div className={styles.cashInputRow}>
-              <input
-                className={styles.cashInput}
-                inputMode="numeric"
-                value={cashInput}
-                onChange={e => handleCashChange(e.target.value)}
-                placeholder="0"
-                aria-label="보유 현금 (선택)"
-              />
-              <span className={styles.cashUnit}>원</span>
+          {hasDuplicates && (
+            <div className={styles.dupNotice}>
+              <strong>같은 종목이 여러 줄 있습니다.</strong><br />
+              서로 다른 계좌(일반계좌·ISA)라면 그대로 두세요. 같은 계좌를 두 번 올렸다면 하나를 삭제해주세요.
             </div>
-          </label>
-        </section>
-      )}
+          )}
 
-      {hasPositions && (
-        <div className={styles.partDivider}>
-          <hr className={styles.partDividerLine} />
-          <span className={styles.partDividerLabel}>지금 가진 것 → 앞으로 원하는 것</span>
-          <hr className={styles.partDividerLine} />
+          {positions.length === 0 && (
+            <div className={styles.empty}>
+              <p>인식된 종목이 없습니다.</p>
+              <p>주식잔고 화면을 캡처했는지 확인해주세요.</p>
+              <button className="btn-primary" style={{ marginTop: 16 }} onClick={() => router.push('/')}>
+                다시 업로드하기
+              </button>
+            </div>
+          )}
+          {cashSection}
+          {targetSection}
         </div>
-      )}
-
-      {hasPositions && (
-        <section className={styles.targetSection}>
-          <div className={styles.targetHeader}>
-            <h2 className={styles.targetTitle}>목표 배분 조정</h2>
-            <p className={styles.targetHint}>원하는 비중으로 슬라이더를 조정한 뒤 진단을 시작하세요.</p>
-          </div>
-
-          <div className={styles.sliderList}>
-            {TARGET_FIELDS.map(assetClass => (
-              <label key={assetClass} className={styles.sliderRow}>
-                <div className={styles.sliderMeta}>
-                  <span className={styles.sliderLabel}>{assetClass}</span>
-                  <span className={styles.sliderValue}>{target[assetClass]}%</span>
-                </div>
-                <input
-                  className={styles.slider}
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={target[assetClass]}
-                  onChange={e => handleTargetChange(assetClass, Number(e.target.value))}
-                />
-              </label>
-            ))}
-          </div>
-
-          <div
-            className={`${styles.targetSummary} ${
-              isTargetBalanced ? styles.targetSummaryValid : styles.targetSummaryInvalid
-            }`}
-          >
-            <span className={styles.targetSummaryLabel}>합계</span>
-            <strong className={styles.targetSummaryValue}>{targetSum}%</strong>
-            <span className={styles.targetSummaryMessage}>
-              {isTargetBalanced ? '합계가 100%입니다.' : '합계가 100%가 되도록 조정해주세요.'}
-            </span>
-          </div>
-        </section>
       )}
 
       {hasPositions && (
