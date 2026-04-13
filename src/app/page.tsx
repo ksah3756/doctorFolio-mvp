@@ -1,5 +1,6 @@
 // src/app/page.tsx
 'use client'
+import Link from 'next/link'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SESSION_KEYS } from '@/lib/types'
@@ -144,7 +145,7 @@ export default function UploadPage() {
 
         {error && <p className={styles.error}>⚠️ {error} — <a href="#" onClick={() => setError(null)}>다시 시도</a></p>}
 
-        <p className={styles.manual}>또는 <a href="#">종목을 직접 입력하기</a></p>
+        <p className={styles.manual}>또는 <Link href="/manual">종목을 직접 입력하기</Link></p>
       </div>
     </div>
   )

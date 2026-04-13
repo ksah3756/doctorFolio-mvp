@@ -1,0 +1,241 @@
+.wrap {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  padding: 18px 20px 12px;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--navy);
+}
+
+.backButton {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.content {
+  flex: 1;
+  padding: 8px 20px 132px;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy-mid);
+}
+
+.title {
+  font-size: 28px;
+  line-height: 1.28;
+  letter-spacing: -0.7px;
+}
+
+.description {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.section + .section {
+  margin-top: 20px;
+}
+
+.formCard,
+.positionCard,
+.emptyState {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.formCard {
+  padding: 18px 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field + .field {
+  margin-top: 14px;
+}
+
+.label {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 15px;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.08);
+}
+
+.moneyField {
+  position: relative;
+}
+
+.moneyField .input {
+  padding-right: 44px;
+}
+
+.moneyUnit {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.addButton {
+  margin-top: 18px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.sectionMeta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.positionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.positionCard {
+  padding: 16px;
+}
+
+.positionMain {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.positionName {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+
+.positionCode {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.positionValue {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+
+.positionFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.assetBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.deleteButton {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.emptyState {
+  padding: 24px 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.addButton:disabled,
+.ctaButton:disabled {
+  background: var(--border-2);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: not-allowed;
+}
+
+.ctaButton {
+  padding-bottom: calc(15px + env(safe-area-inset-bottom));
+}
