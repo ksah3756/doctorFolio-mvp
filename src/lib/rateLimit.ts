@@ -8,6 +8,11 @@ export const RATE_LIMIT = {
   windowSeconds: 60,
 } as const
 
+export const OCR_RATE_LIMIT = {
+  limit: 5,
+  windowSeconds: 86400, // 24시간
+} as const
+
 export function canUseRateLimit(env: Record<string, string | undefined> = process.env): boolean {
   return Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN)
 }
@@ -19,9 +24,10 @@ export function getClientIp(forwardedFor: string | null | undefined): string {
 export async function isRateLimited(
   store: RateLimitStore,
   ip: string,
-  config: typeof RATE_LIMIT = RATE_LIMIT,
+  config: { limit: number; windowSeconds: number } = RATE_LIMIT,
+  keyPrefix = 'rate',
 ): Promise<boolean> {
-  const key = `rate:${ip}`
+  const key = `${keyPrefix}:${ip}`
   const count = await store.incr(key)
 
   if (count === 1) {

@@ -3,6 +3,7 @@ import {
   canUseRateLimit,
   getClientIp,
   isRateLimited,
+  OCR_RATE_LIMIT,
   RATE_LIMIT,
   type RateLimitStore,
 } from './rateLimit'
@@ -58,5 +59,22 @@ describe('rateLimit helpers', () => {
 
     expect(limited).toBe(true)
     expect(store.expires).toEqual([])
+  })
+
+  it('uses ocr: key prefix and 24h window for OCR_RATE_LIMIT', async () => {
+    const store = createStore([1])
+
+    await isRateLimited(store, '1.2.3.4', OCR_RATE_LIMIT, 'ocr')
+
+    expect(store.keys).toEqual(['ocr:1.2.3.4'])
+    expect(store.expires).toEqual([['ocr:1.2.3.4', 86400]])
+  })
+
+  it('OCR_RATE_LIMIT blocks on the 6th request within 24h', async () => {
+    const store = createStore([OCR_RATE_LIMIT.limit + 1])
+
+    const limited = await isRateLimited(store, '1.2.3.4', OCR_RATE_LIMIT, 'ocr')
+
+    expect(limited).toBe(true)
   })
 })

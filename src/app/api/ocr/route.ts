@@ -2,12 +2,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildOcrPrompt, getOcrErrorDetails, normalizeOcrItems, parseOcrResponse } from '@/lib/ocr'
+import { canUseRateLimit, getClientIp, isRateLimited, OCR_RATE_LIMIT } from '@/lib/rateLimit'
 import type { PortfolioPosition } from '@/lib/types'
 
 const client = new Anthropic()
 
 export async function POST(req: NextRequest) {
   try {
+    if (canUseRateLimit()) {
+      const { Redis } = await import('@upstash/redis')
+      const redis = Redis.fromEnv()
+      const ip = getClientIp(req.headers.get('x-forwarded-for'))
+      const limited = await isRateLimited(redis, ip, OCR_RATE_LIMIT, 'ocr')
+      if (limited) {
+        return NextResponse.json(
+          { error: '24시간 내 OCR 요청 한도(5회)를 초과했습니다. 내일 다시 시도해주세요.' },
+          { status: 429 },
+        )
+      }
+    }
     const formData = await req.formData()
     const images = formData.getAll('images') as File[]
 
