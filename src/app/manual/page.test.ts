@@ -8,14 +8,20 @@ describe('ManualInputPage helpers', () => {
       assetClass: '',
       code: '',
       name: '삼성전자',
+      sector: '반도체',
       value: '100000',
+      avgCost: '90000',
+      currentPrice: '100000',
     })).toBe(false)
 
     expect(isManualDraftComplete({
       assetClass: '국내주식',
       code: '',
       name: '삼성전자',
+      sector: '반도체',
       value: '100000',
+      avgCost: '90000',
+      currentPrice: '100000',
     })).toBe(true)
   })
 
@@ -24,7 +30,10 @@ describe('ManualInputPage helpers', () => {
       assetClass: '해외주식',
       code: '  ',
       name: ' Apple ',
+      sector: '소프트웨어',
       value: '150000',
+      avgCost: '140000',
+      currentPrice: '155000',
     })
 
     expect(position).toMatchObject({
@@ -32,10 +41,10 @@ describe('ManualInputPage helpers', () => {
       code: null,
       qty: 1,
       value: 150000,
-      avgCost: 150000,
-      currentPrice: 150000,
+      avgCost: 140000,
+      currentPrice: 155000,
       assetClass: '해외주식',
-      sector: '해외주식',
+      sector: '소프트웨어',
       sourceImage: 1,
     })
     expect(position.id).toMatch(/^[0-9a-f-]{36}$/)
@@ -46,5 +55,6 @@ describe('ManualInputPage helpers', () => {
 
     expect(css).toContain('max-width: 440px;')
     expect(css).toContain('env(safe-area-inset-bottom)')
+    expect(css).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));')
   })
 })

@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "tsc --noEmit && eslint src && vitest run",
+    "verify": "next build && tsc --noEmit && eslint src && vitest run",
     "test-ocr": "bun run ocr-test.ts"
   },
   "dependencies": {
