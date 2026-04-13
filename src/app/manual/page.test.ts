@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { createManualPosition, isManualDraftComplete } from './page'
+import { createManualPosition, isManualDraftComplete } from './manualPosition'
 
 describe('ManualInputPage helpers', () => {
   it('activates add only when required fields are present', () => {

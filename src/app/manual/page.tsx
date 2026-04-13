@@ -2,62 +2,16 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SESSION_KEYS } from '@/lib/types'
-import type { AssetClass, PortfolioPosition } from '@/lib/types'
+import type { PortfolioPosition } from '@/lib/types'
+import { EMPTY_DRAFT, createManualPosition, isManualDraftComplete } from './manualPosition'
 import styles from './page.module.css'
 
-const ASSET_CLASSES: AssetClass[] = ['국내주식', '해외주식', '채권', '기타']
+const ASSET_CLASSES = ['국내주식', '해외주식', '채권', '기타'] as const
 const currencyFormatter = new Intl.NumberFormat('ko-KR')
-
-export interface ManualPositionDraft {
-  assetClass: '' | AssetClass
-  code: string
-  name: string
-  value: string
-}
-
-const EMPTY_DRAFT: ManualPositionDraft = {
-  assetClass: '',
-  code: '',
-  name: '',
-  value: '',
-}
-
-function parseManualValue(value: string): number {
-  const digits = value.replace(/\D/g, '')
-  if (!digits) return 0
-
-  return Number(digits)
-}
-
-export function isManualDraftComplete(
-  draft: ManualPositionDraft
-): draft is ManualPositionDraft & { assetClass: AssetClass } {
-  return draft.name.trim().length > 0 && parseManualValue(draft.value) > 0 && draft.assetClass !== ''
-}
-
-export function createManualPosition(
-  draft: ManualPositionDraft & { assetClass: AssetClass }
-): PortfolioPosition {
-  const amount = parseManualValue(draft.value)
-  const code = draft.code.trim()
-
-  return {
-    id: crypto.randomUUID(),
-    name: draft.name.trim(),
-    code: code || null,
-    qty: 1,
-    value: amount,
-    avgCost: amount,
-    currentPrice: amount,
-    assetClass: draft.assetClass,
-    sector: draft.assetClass,
-    sourceImage: 1,
-  }
-}
 
 export default function ManualInputPage() {
   const router = useRouter()
-  const [draft, setDraft] = useState<ManualPositionDraft>(EMPTY_DRAFT)
+  const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [positions, setPositions] = useState<PortfolioPosition[]>([])
 
   const canAdd = isManualDraftComplete(draft)
@@ -150,7 +104,7 @@ export default function ManualInputPage() {
                 value={draft.assetClass}
                 onChange={event => setDraft(currentDraft => ({
                   ...currentDraft,
-                  assetClass: event.target.value as ManualPositionDraft['assetClass'],
+                  assetClass: event.target.value as typeof currentDraft.assetClass,
                 }))}
               >
                 <option value="">선택해주세요</option>
