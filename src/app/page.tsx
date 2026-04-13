@@ -82,7 +82,7 @@ export default function UploadPage() {
   if (loading) {
     return (
       <div className={styles.wrap}>
-        <nav className="nav"><span className="logo">포트폴리오<em>·</em>닥터</span><span className="nav-step">1 / 2</span></nav>
+        <nav className="nav"><span className="logo">Dr.Folio</span><span className="nav-step">1 / 2</span></nav>
         <div className={styles.loadingBody}>
           <div className={styles.eyebrow}>분석 중</div>
           <h1 className={styles.loadingTitle}>포트폴리오<br />읽는 중...</h1>
@@ -108,7 +108,7 @@ export default function UploadPage() {
 
   return (
     <div className={styles.wrap}>
-      <nav className="nav"><span className="logo">포트폴리오<em>·</em>닥터</span></nav>
+      <nav className="nav"><span className="logo">Dr.Folio</span></nav>
       <div className={styles.body}>
         <div className={styles.intro}>
           <h1 className={styles.headline}>건강검진은 챙기시면서,<br />포트폴리오 검진은<br />언제 받으셨나요?</h1>

@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '포트폴리오 닥터',
+  title: 'Dr.Folio',
   description: 'MTS 캡처 한 장으로 포트폴리오 진단',
 }
 

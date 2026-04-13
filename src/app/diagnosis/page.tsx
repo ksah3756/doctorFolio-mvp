@@ -106,7 +106,7 @@ export default function DiagnosisPage() {
   const mbtiProfile = MBTI_PROFILES[mbtiType]
 
   async function handleShare() {
-    const text = `나의 투자 MBTI는 ${mbtiProfile.emoji} ${mbtiProfile.type} ${mbtiProfile.name}!\n포트폴리오 닥터에서 내 투자 성향을 분석해봤어요`
+    const text = `나의 투자 MBTI는 ${mbtiProfile.emoji} ${mbtiProfile.type} ${mbtiProfile.name}!\nDr.Folio에서 내 투자 성향을 분석해봤어요`
     if (typeof navigator !== 'undefined' && navigator.share) {
       try { await navigator.share({ title: '투자 MBTI', text }) } catch { /* 취소 */ }
     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {

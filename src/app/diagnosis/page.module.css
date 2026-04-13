@@ -19,7 +19,14 @@
   color: #fff;
   margin-bottom: 4px;
 }
-.bigNum em { font-style: normal; font-size: 18px; font-weight: 700; color: rgba(255,255,255,.7); vertical-align: middle; }
+.bigNum em {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,.7);
+  vertical-align: middle;
+}
 .subline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 10px; }
 .targetError {
   margin-top: 10px;

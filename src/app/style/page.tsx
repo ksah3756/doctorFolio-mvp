@@ -148,7 +148,7 @@ export default function StylePage() {
   return (
     <div className={styles.wrap}>
       <nav className="nav">
-        <span className="logo">포트폴리오<em>·</em>닥터</span>
+        <span className="logo">Dr.Folio</span>
         <span className="nav-step">2 / 2</span>
       </nav>
 
