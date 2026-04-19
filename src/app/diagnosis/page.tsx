@@ -1,6 +1,6 @@
 // src/app/diagnosis/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
@@ -13,6 +13,7 @@ import { inferStyleKey } from '@/lib/investorProfile'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
 import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
 import { buildSectorAllocation } from '@/lib/sectorAllocation'
+import { prefetchTradingSignals } from '@/lib/tradingSignalsClient'
 import { SESSION_KEYS } from '@/lib/types'
 import type {
   DiagnosisResult,
@@ -34,6 +35,31 @@ function readConfirmedPositions(): PortfolioPosition[] {
     return JSON.parse(raw) as PortfolioPosition[]
   } catch {
     return []
+  }
+}
+
+function subscribeToClientReady() {
+  return () => {}
+}
+
+function getClientReadySnapshot() {
+  return true
+}
+
+function getServerReadySnapshot() {
+  return false
+}
+
+function readStoredDiagnosis(): DiagnosisResult | null {
+  if (typeof window === 'undefined') return null
+
+  const raw = sessionStorage.getItem(SESSION_KEYS.DIAGNOSIS)
+  if (!raw) return null
+
+  try {
+    return JSON.parse(raw) as DiagnosisResult
+  } catch {
+    return null
   }
 }
 
@@ -59,9 +85,14 @@ function readDesiredStyle(positions: PortfolioPosition[]): StyleKey {
 
 export default function DiagnosisPage() {
   const router = useRouter()
-  const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null)
-  const [positions] = useState<PortfolioPosition[]>(() => readConfirmedPositions())
-  const [desiredStyle] = useState<StyleKey>(() => readDesiredStyle(positions))
+  const isClient = useSyncExternalStore(
+    subscribeToClientReady,
+    getClientReadySnapshot,
+    getServerReadySnapshot,
+  )
+  const diagnosis = useMemo(() => (isClient ? readStoredDiagnosis() : null), [isClient])
+  const positions = useMemo(() => (isClient ? readConfirmedPositions() : []), [isClient])
+  const desiredStyle = useMemo(() => readDesiredStyle(positions), [positions])
   const [copied, setCopied] = useState(false)
   const [explainOpen, setExplainOpen] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
@@ -70,14 +101,18 @@ export default function DiagnosisPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(SESSION_KEYS.DIAGNOSIS)
-    if (!raw) { router.replace('/'); return }
-    try {
-      setDiagnosis(JSON.parse(raw) as DiagnosisResult)
-    } catch {
-      router.replace('/')
-    }
-  }, [router])
+    if (isClient && !diagnosis) router.replace('/')
+  }, [diagnosis, isClient, router])
+
+  useEffect(() => {
+    if (!isClient) return
+    router.prefetch('/signals')
+    if (positions.length === 0) return
+
+    void prefetchTradingSignals(positions).catch(() => {
+      // signals page에서 다시 로드하므로 background warmup 실패는 무시한다.
+    })
+  }, [isClient, positions, router])
 
   async function toggleExplain() {
     if (explainOpen) { setExplainOpen(false); return }
@@ -116,7 +151,7 @@ export default function DiagnosisPage() {
     }
   }
 
-  if (!diagnosis) return null
+  if (!isClient || !diagnosis) return null
 
   const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
   const isHealthy = diagnosis.problems.length === 0
@@ -179,6 +214,16 @@ export default function DiagnosisPage() {
               </span>
             </div>
             <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
+          </button>
+
+          <button className={styles.signalBtn} onClick={() => router.push('/signals')}>
+            <div className={styles.signalBtnText}>
+              <span className={styles.signalBtnTitle}>종목 시그널 분석 보기</span>
+              <span className={styles.signalBtnMeta}>
+                각 종목별 RSI, MACD, 거래량, 52주 위치를 카드로 정리했어요
+              </span>
+            </div>
+            <span className={styles.signalBtnArrow} aria-hidden="true">↗</span>
           </button>
         </section>
 

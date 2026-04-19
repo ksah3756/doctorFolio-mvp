@@ -1,0 +1,117 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 12px 24px rgba(18, 24, 88, 0.05);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.marketRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.market,
+.ticker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+}
+
+.badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge_buy {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.badge_neutral {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.badge_sell {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.headline {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.metricList {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.metric {
+  background: linear-gradient(180deg, rgba(232, 234, 246, 0.65), rgba(244, 246, 255, 0.3));
+  border: 1px solid rgba(26, 35, 126, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.metricTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metricLabel {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.metricSignal {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.metricSignal_buy {
+  color: var(--green);
+}
+
+.metricSignal_neutral {
+  color: var(--amber);
+}
+
+.metricSignal_sell {
+  color: var(--red);
+}
+
+.metricSummary {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}

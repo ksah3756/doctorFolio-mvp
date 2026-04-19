@@ -72,6 +72,7 @@ export const SESSION_KEYS = {
   TARGET: 'pd_target',                 // TargetAllocation
   DIAGNOSIS: 'pd_diagnosis',           // DiagnosisResult
   INVESTOR_PROFILE: 'pd_investor_profile', // InvestorProfile
+  SIGNALS: 'pd_signals',               // TradingSignal cache
 } as const
 
 // 투자 성향 위저드

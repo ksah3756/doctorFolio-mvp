@@ -141,6 +141,46 @@
   flex-shrink: 0;
 }
 
+.signalBtn {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(5, 150, 105, 0.03));
+  border: 1px solid rgba(5, 150, 105, 0.18);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+}
+
+.signalBtnText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.signalBtnTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #065f46;
+}
+
+.signalBtnMeta {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(6, 95, 70, 0.8);
+  line-height: 1.45;
+}
+
+.signalBtnArrow {
+  font-size: 16px;
+  font-weight: 800;
+  color: #047857;
+  flex-shrink: 0;
+}
+
 .explainBtn {
   width: 100%;
   background: var(--surface);
