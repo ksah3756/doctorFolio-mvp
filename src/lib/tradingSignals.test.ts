@@ -95,7 +95,6 @@ describe('buildTradingSignal', () => {
     const signal = buildTradingSignal({
       companyName: 'Apple',
       currentPrice: 92,
-      fearGreed: { label: 'Fear', score: 25 },
       insiderActivity: { buyCount: 2, netValue: 3_000_000, sellCount: 0 },
       market: 'US',
       marketSymbol: 'AAPL',
@@ -108,17 +107,16 @@ describe('buildTradingSignal', () => {
       week52Low: 88,
     })
 
-    expect(signal.metrics).toHaveLength(7)
+    expect(signal.metrics).toHaveLength(6)
     expect(signal.recommendation).toBe('buy')
     expect(signal.metrics[0].summary).toContain('RSI')
-    expect(signal.metrics[6].label).toBe('Fear&Greed')
+    expect(signal.metrics[5].label).toBe('내부자 매매')
   })
 
   it('과열 지표가 많으면 매도 추천을 준다', () => {
     const signal = buildTradingSignal({
       companyName: 'Samsung Electronics',
       currentPrice: 220,
-      fearGreed: { label: 'Greed', score: 78 },
       insiderActivity: { buyCount: 0, netValue: -5_000_000, sellCount: 3 },
       market: 'KR',
       marketSymbol: '005930.KS',

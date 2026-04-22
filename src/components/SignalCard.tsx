@@ -1,17 +1,19 @@
+import type { FinalJudgment } from '@/lib/finalJudgment'
 import type { TradingRecommendation, TradingSignal } from '@/lib/tradingSignals'
 import styles from './SignalCard.module.css'
 
 interface SignalCardProps {
+  judgment: FinalJudgment
   signal: TradingSignal
 }
 
-const RECOMMENDATION_LABEL: Record<TradingRecommendation, string> = {
+const TECHNICAL_LABEL: Record<TradingRecommendation, string> = {
   buy: '매수 관점',
   neutral: '중립',
   sell: '매도 관점',
 }
 
-export function SignalCard({ signal }: SignalCardProps) {
+export function SignalCard({ judgment, signal }: SignalCardProps) {
   return (
     <article className={styles.card}>
       <div className={styles.header}>
@@ -22,12 +24,16 @@ export function SignalCard({ signal }: SignalCardProps) {
           </div>
           <h2 className={styles.name}>{signal.companyName}</h2>
         </div>
-        <span className={`${styles.badge} ${styles[`badge_${signal.recommendation}`]}`}>
-          {RECOMMENDATION_LABEL[signal.recommendation]}
+        <span className={`${styles.badge} ${styles[`badge_${judgment.key}`]}`}>
+          {judgment.label}
         </span>
       </div>
 
-      <p className={styles.headline}>{signal.headline}</p>
+      <p className={styles.headline}>{judgment.summary}</p>
+      <p className={styles.decisionMeta}>
+        기술 시그널 {TECHNICAL_LABEL[signal.recommendation]} · 점수 {signal.score >= 0 ? '+' : ''}{signal.score}
+      </p>
+      <p className={styles.headlineSub}>{signal.headline}</p>
 
       <div className={styles.metricList}>
         {signal.metrics.map(metric => (

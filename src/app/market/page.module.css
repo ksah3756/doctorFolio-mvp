@@ -1,0 +1,233 @@
+.wrap {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, var(--navy-dark) 0 280px, var(--bg) 280px 100%);
+}
+
+.header {
+  padding: 24px 20px 28px;
+  color: #fff;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 32px;
+  line-height: 1.12;
+  letter-spacing: -0.05em;
+}
+
+.sub {
+  margin-top: 12px;
+  max-width: 680px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.heroCard {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.heroLabel {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.heroValue {
+  margin-top: 10px;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.heroSummary {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge_risk_on {
+  background: rgba(5, 150, 105, 0.16);
+  color: #d8fff1;
+}
+
+.badge_neutral {
+  background: rgba(217, 119, 6, 0.16);
+  color: #ffefcf;
+}
+
+.badge_risk_off {
+  background: rgba(220, 38, 38, 0.16);
+  color: #ffd6d6;
+}
+
+.refreshButton,
+.secondaryLink,
+.inlineRetry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: var(--radius-btn);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.refreshButton {
+  border: none;
+  padding: 0 16px;
+  background: #fff;
+  color: var(--navy-dark);
+}
+
+.body {
+  padding: 0 16px 48px;
+}
+
+.actions {
+  margin-top: -10px;
+  margin-bottom: 16px;
+}
+
+.secondaryLink {
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--navy);
+  border: 1px solid rgba(26, 35, 126, 0.12);
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.metaBadge {
+  border-radius: 999px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.cardGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.stateCard,
+.skeletonCard {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.stateCard {
+  padding: 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.inlineRetry {
+  margin-top: 12px;
+  padding: 0 16px;
+  border: 1px solid rgba(26, 35, 126, 0.14);
+  background: var(--surface);
+  color: var(--navy);
+}
+
+.skeletonCard {
+  padding: 18px;
+}
+
+.skeletonTitle,
+.skeletonValue,
+.skeletonLine,
+.skeletonLineShort {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(232, 234, 246, 0.9), rgba(244, 246, 255, 0.9));
+}
+
+.skeletonTitle {
+  width: 110px;
+  height: 14px;
+}
+
+.skeletonValue {
+  width: 140px;
+  height: 34px;
+  margin-top: 16px;
+}
+
+.skeletonLine,
+.skeletonLineShort {
+  height: 12px;
+  margin-top: 14px;
+}
+
+.skeletonLineShort {
+  width: 72%;
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 32px 32px 36px;
+  }
+
+  .heroCard,
+  .body {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .body {
+    padding: 0 24px 64px;
+  }
+
+  .heroCard {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}

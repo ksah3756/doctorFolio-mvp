@@ -13,6 +13,7 @@ import { inferStyleKey } from '@/lib/investorProfile'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
 import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
 import { buildSectorAllocation } from '@/lib/sectorAllocation'
+import { prefetchMarketSignals } from '@/lib/marketSignalsClient'
 import { prefetchTradingSignals } from '@/lib/tradingSignalsClient'
 import { SESSION_KEYS } from '@/lib/types'
 import type {
@@ -107,11 +108,13 @@ export default function DiagnosisPage() {
   useEffect(() => {
     if (!isClient) return
     router.prefetch('/signals')
+    router.prefetch('/market')
     if (positions.length === 0) return
 
-    void prefetchTradingSignals(positions).catch(() => {
-      // signals page에서 다시 로드하므로 background warmup 실패는 무시한다.
-    })
+    void Promise.allSettled([
+      prefetchTradingSignals(positions),
+      prefetchMarketSignals(),
+    ])
   }, [isClient, positions, router])
 
   async function toggleExplain() {
@@ -220,7 +223,7 @@ export default function DiagnosisPage() {
             <div className={styles.signalBtnText}>
               <span className={styles.signalBtnTitle}>종목 시그널 분석 보기</span>
               <span className={styles.signalBtnMeta}>
-                각 종목별 RSI, MACD, 거래량, 52주 위치를 카드로 정리했어요
+                각 종목별 신호와 오늘 시장 상태를 함께 볼 수 있어요
               </span>
             </div>
             <span className={styles.signalBtnArrow} aria-hidden="true">↗</span>

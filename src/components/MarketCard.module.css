@@ -1,0 +1,73 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 14px 28px rgba(18, 24, 88, 0.06);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+}
+
+.badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge_positive {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.badge_neutral {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.badge_negative {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.badge_unavailable {
+  background: rgba(232, 234, 246, 0.85);
+  color: var(--navy);
+}
+
+.value {
+  margin-top: 14px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--navy-dark);
+}
+
+.summary {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+.guide {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(26, 35, 126, 0.08);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}

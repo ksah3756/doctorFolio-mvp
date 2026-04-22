@@ -14,11 +14,6 @@ export interface PriceHistoryPoint {
   volume: number
 }
 
-export interface FearGreedSnapshot {
-  label: string
-  score: number
-}
-
 export interface InsiderActivitySummary {
   buyCount: number
   netValue: number
@@ -26,7 +21,7 @@ export interface InsiderActivitySummary {
 }
 
 export interface TradingSignalMetric {
-  key: 'rsi' | 'macd' | 'volume' | 'fiftyTwoWeek' | 'sixMonthAverage' | 'insider' | 'fearGreed'
+  key: 'rsi' | 'macd' | 'volume' | 'fiftyTwoWeek' | 'sixMonthAverage' | 'insider'
   label: string
   signal: TradingRecommendation
   summary: string
@@ -48,7 +43,6 @@ export interface TradingSignal {
 export interface BuildTradingSignalInput {
   companyName: string
   currentPrice: number
-  fearGreed: FearGreedSnapshot
   insiderActivity: InsiderActivitySummary
   market: TradingMarket
   marketSymbol: string
@@ -221,7 +215,6 @@ export function buildTradingSignal(input: BuildTradingSignalInput): TradingSigna
     buildFiftyTwoWeekMetric(week52Band),
     buildSixMonthMetric(diffFromAverage6Month),
     buildInsiderMetric(input.insiderActivity, input.market),
-    buildFearGreedMetric(input.fearGreed),
   ]
 
   const score = metrics.reduce((sum, metric) => sum + scoreSignal(metric.signal), 0)
@@ -246,16 +239,14 @@ export function buildTradingSignal(input: BuildTradingSignalInput): TradingSigna
 }
 
 export async function fetchTradingSignal(ticker: string, market: TradingMarket): Promise<TradingSignal> {
-  const [yahooSnapshot, fearGreed, insiderActivity] = await Promise.all([
+  const [yahooSnapshot, insiderActivity] = await Promise.all([
     fetchYahooSnapshot(ticker, market),
-    fetchFearGreedSnapshot(),
     fetchInsiderActivity(ticker, market),
   ])
 
   return buildTradingSignal({
     companyName: yahooSnapshot.companyName,
     currentPrice: yahooSnapshot.currentPrice,
-    fearGreed,
     insiderActivity,
     market,
     marketSymbol: yahooSnapshot.marketSymbol,
@@ -264,22 +255,6 @@ export async function fetchTradingSignal(ticker: string, market: TradingMarket):
     week52High: yahooSnapshot.week52High,
     week52Low: yahooSnapshot.week52Low,
   })
-}
-
-export async function fetchFearGreedSnapshot(): Promise<FearGreedSnapshot> {
-  const response = await fetch('https://onoff.markets/data/stocks-fear-greed.json', {
-    headers: YAHOO_HEADERS,
-  })
-
-  if (!response.ok) {
-    throw new Error(`Fear & Greed fetch failed: ${response.status}`)
-  }
-
-  const data = await response.json() as { label?: string; score?: number }
-  return {
-    label: typeof data.label === 'string' ? data.label : 'Neutral',
-    score: typeof data.score === 'number' ? data.score : 50,
-  }
 }
 
 export async function fetchInsiderActivity(ticker: string, market: TradingMarket): Promise<InsiderActivitySummary> {
@@ -553,36 +528,6 @@ function buildInsiderMetric(activity: InsiderActivitySummary, market: TradingMar
     signal: 'neutral',
     summary: '내부자 매수와 매도가 비슷하게 섞여 있어, 한쪽으로 강한 방향 신호를 주진 않아요.',
     value: `매수 ${activity.buyCount}건 / 매도 ${activity.sellCount}건`,
-  }
-}
-
-function buildFearGreedMetric(fearGreed: FearGreedSnapshot): TradingSignalMetric {
-  if (fearGreed.score <= 35) {
-    return {
-      key: 'fearGreed',
-      label: 'Fear&Greed',
-      signal: 'buy',
-      summary: `시장 심리가 ${fearGreed.label.toLowerCase()} 쪽이라 겁먹은 매물이 많은 상태라, 역발상 매수 후보로 볼 수 있어요.`,
-      value: `${fearGreed.label} ${formatNumber(fearGreed.score)}`,
-    }
-  }
-
-  if (fearGreed.score >= 70) {
-    return {
-      key: 'fearGreed',
-      label: 'Fear&Greed',
-      signal: 'sell',
-      summary: `시장 심리가 ${fearGreed.label.toLowerCase()} 쪽이라 모두가 낙관적인 구간이라, 추격보다 리스크 관리를 먼저 볼 수 있어요.`,
-      value: `${fearGreed.label} ${formatNumber(fearGreed.score)}`,
-    }
-  }
-
-  return {
-    key: 'fearGreed',
-    label: 'Fear&Greed',
-    signal: 'neutral',
-    summary: '시장 심리가 공포와 탐욕 사이 중간 구간이라, 전체 분위기는 방향성보다 확인 국면에 가까워요.',
-    value: `${fearGreed.label} ${formatNumber(fearGreed.score)}`,
   }
 }
 
