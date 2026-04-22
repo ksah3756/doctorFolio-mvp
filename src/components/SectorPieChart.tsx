@@ -18,6 +18,10 @@ interface SectorPieChartProps {
 }
 
 export function SectorPieChart({ slices }: SectorPieChartProps) {
+  if (slices.length === 0) {
+    return null
+  }
+
   const totalValue = slices.reduce((sum, slice) => sum + slice.value, 0)
   const chartFill = slices
     .map((slice, index) => {

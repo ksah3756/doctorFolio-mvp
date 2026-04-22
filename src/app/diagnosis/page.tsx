@@ -163,6 +163,7 @@ export default function DiagnosisPage() {
   const sectorSlices = buildSectorAllocation(positions)
   const currentScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
   const idealScore = computeIdealScore(diagnosis.currentAllocation, positions, desiredStyle)
+  const hasActions = diagnosis.actions.length > 0
   const scorePreview = idealScore > currentScore
     ? `건강점수 ${currentScore}점 → ${idealScore}점`
     : `건강점수 ${currentScore}점 기준으로 전체 비중 확인`
@@ -209,7 +210,28 @@ export default function DiagnosisPage() {
             </>
           )}
 
-          <button className={styles.improvementBtn} onClick={() => setSheetOpen(true)}>
+          {hasActions && (
+            <>
+              <div className={styles.sectionLabel}>권장 조치</div>
+              <div className={styles.actionCard}>
+                {diagnosis.actions.map(action => (
+                  <ActionItem
+                    key={`${action.action}-${action.ticker}-${action.quantity}`}
+                    action={action}
+                  />
+                ))}
+              </div>
+              <p className={styles.fineLine}>
+                현재가는 캡처 시점 기준입니다. 실제 주문 전 가격과 세금은 다시 확인하세요.
+              </p>
+            </>
+          )}
+
+          <button
+            className={styles.improvementBtn}
+            type="button"
+            onClick={() => setSheetOpen(true)}
+          >
             <div className={styles.improvementBtnText}>
               <span className={styles.improvementBtnTitle}>포트폴리오 개선 보기</span>
               <span className={styles.improvementBtnMeta}>
@@ -233,7 +255,11 @@ export default function DiagnosisPage() {
         {sectorSlices.length > 0 && <SectorPieChart slices={sectorSlices} />}
 
         {/* 왜 이 조언인가요? */}
-        <button className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`} onClick={toggleExplain}>
+        <button
+          className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`}
+          type="button"
+          onClick={toggleExplain}
+        >
           왜 이 조언인가요?
           <span className={styles.explainIcon}>▾</span>
         </button>
@@ -242,7 +268,10 @@ export default function DiagnosisPage() {
             {explainLoading && <p>설명 불러오는 중...</p>}
             {explainError && (
               <p>설명을 불러오지 못했습니다.{' '}
-                <button onClick={() => { setExplanation(null); setExplainError(false); toggleExplain() }}>
+                <button
+                  type="button"
+                  onClick={() => { setExplanation(null); setExplainError(false); toggleExplain() }}
+                >
                   다시 시도
                 </button>
               </p>
@@ -267,6 +296,7 @@ export default function DiagnosisPage() {
           <div className={styles.mbtiDesc}>{mbtiProfile.desc}</div>
           <button
             className={styles.shareBtn}
+            type="button"
             onClick={handleShare}
             aria-label="투자 MBTI 공유하기"
           >
@@ -280,7 +310,7 @@ export default function DiagnosisPage() {
           ))}
         </div>
 
-        <button className={styles.resetBtn} onClick={() => router.push('/')}>
+        <button className={styles.resetBtn} type="button" onClick={() => router.push('/')}>
           ↩ 다시 진단하기
         </button>
       </div>

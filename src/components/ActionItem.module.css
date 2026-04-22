@@ -6,6 +6,7 @@
 .buy  { background: var(--green-bg); color: var(--green); }
 .info { flex: 1; min-width: 0; }
 .name { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+.note { font-size: 12px; color: var(--text-2); margin-top: 3px; line-height: 1.45; }
 .tax  { font-size: 11px; color: var(--text-3); margin-top: 2px; }
 .qty  { text-align: right; flex-shrink: 0; }
 .qtyNum { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }

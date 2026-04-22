@@ -125,8 +125,8 @@ export function ProblemCard({ problem, index }: Props) {
 
       <p className={styles.desc}>{problem.description}</p>
       <ul className={styles.recommendations} aria-label={`${getAssetLabel(problem)} 개선 방향`}>
-        {recommendationLines.map(line => (
-          <li key={line}>{line}</li>
+        {recommendationLines.map((line, recommendationIndex) => (
+          <li key={`${problem.type}-${index}-${recommendationIndex}`}>{line}</li>
         ))}
       </ul>
     </article>
