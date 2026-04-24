@@ -35,7 +35,7 @@
 
 .heroCard {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   margin-top: 20px;
   padding: 20px;
   border-radius: 24px;
@@ -43,26 +43,109 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.heroLabel {
-  font-size: 12px;
+/* 메인 KPI: 진입 매력도 */
+.entryBlock { display: grid; gap: 6px; }
+
+.kpiEyebrow {
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.68);
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.heroValue {
-  margin-top: 10px;
-  font-size: 34px;
+.kpiLabel {
+  font-size: 28px;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 
-.heroSummary {
-  margin-top: 10px;
-  font-size: 14px;
+.kpiScore {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.kpiScoreNum {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiScoreUnit {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.kpiSummary {
+  margin-top: 6px;
+  font-size: 13px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* 서브 KPI: 시장 건강도 */
+.healthChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.healthEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.56);
+  flex-shrink: 0;
+}
+
+.healthLabel {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  flex: 1;
+}
+
+.healthScore {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.56);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* 투자 시사점 */
+.implication {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  gap: 6px;
+}
+
+.implicationLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.implicationText {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.84);
 }
 
 .heroMeta {
@@ -70,28 +153,6 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-}
-
-.badge {
-  border-radius: 999px;
-  padding: 9px 12px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.badge_risk_on {
-  background: rgba(5, 150, 105, 0.16);
-  color: #d8fff1;
-}
-
-.badge_neutral {
-  background: rgba(217, 119, 6, 0.16);
-  color: #ffefcf;
-}
-
-.badge_risk_off {
-  background: rgba(220, 38, 38, 0.16);
-  color: #ffd6d6;
 }
 
 .refreshButton,
@@ -206,6 +267,13 @@
   width: 72%;
 }
 
+.source {
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+}
+
 @media (min-width: 768px) {
   .header {
     padding: 32px 32px 36px;
@@ -219,11 +287,6 @@
 
   .body {
     padding: 0 24px 64px;
-  }
-
-  .heroCard {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
   }
 
   .cardGrid {

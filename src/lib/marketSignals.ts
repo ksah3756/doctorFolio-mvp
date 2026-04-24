@@ -15,12 +15,25 @@ export interface MarketIndicator {
   value: string
 }
 
+export interface MarketEntryKPI {
+  guide: string
+  label: string
+  score: number
+  summary: string
+}
+
+export interface MarketOverview {
+  entry: MarketEntryKPI
+  health: MarketEntryKPI
+}
+
 export interface MarketResponse {
   fetchedAt: string
   headline: string
   indicators: MarketIndicator[]
   macroScore: number
   macroState: MacroState
+  overview: MarketOverview
 }
 
 interface MarketSnapshotInput {
@@ -98,6 +111,7 @@ export function buildMarketResponse(input: MarketSnapshotInput): MarketResponse 
     indicators,
     macroScore,
     macroState,
+    overview: buildOverview(indicators),
   }
 }
 
@@ -474,4 +488,108 @@ function formatNumber(value: number): string {
 
 function formatSignedNumber(value: number): string {
   return `${value >= 0 ? '+' : ''}${formatNumber(value)}`
+}
+
+function invertStatus(status: MarketIndicatorStatus): MarketIndicatorStatus {
+  if (status === 'positive') return 'negative'
+  if (status === 'negative') return 'positive'
+  return status
+}
+
+function computeKPIScore(
+  indicators: MarketIndicator[],
+  invertFearGreed: boolean,
+): number {
+  const scored = indicators.filter(i => i.status !== 'unavailable')
+  if (scored.length === 0) return 50
+
+  const total = scored.reduce((sum, i) => {
+    const status = (invertFearGreed && i.key === 'fearGreed')
+      ? invertStatus(i.status)
+      : i.status
+    return sum + scoreIndicator(status)
+  }, 0)
+
+  return Math.round(((total / scored.length) + 1) * 50)
+}
+
+function buildEntryKPI(score: number): MarketEntryKPI {
+  if (score >= 70) return {
+    guide: '새로운 자금을 분할 매수로 천천히 진입하거나 비중을 늘려볼 수 있는 환경이에요.',
+    label: '매력적인 환경',
+    score,
+    summary: '주식 기대수익이 채권보다 높고 투자심리도 저점권에 있어 진입 매력도가 높아요.',
+  }
+  if (score >= 55) return {
+    guide: '기존 포트폴리오를 유지하면서 여유 자금은 조금씩 추가해볼 수 있어요.',
+    label: '우호적',
+    score,
+    summary: '시장 환경이 전반적으로 주식에 우호적인 구간이에요.',
+  }
+  if (score >= 45) return {
+    guide: '현재 비중을 유지하면서 방향을 지켜보는 게 좋아요.',
+    label: '중립',
+    score,
+    summary: '매력도가 한쪽으로 크게 기울지 않아 서두를 이유가 없는 구간이에요.',
+  }
+  if (score >= 30) return {
+    guide: '무리한 추가 매수보다 현재 비중 유지나 일부 조정을 고려해보세요.',
+    label: '신중 필요',
+    score,
+    summary: '주식 매력도가 채권 대비 줄어들고 있어 신중한 접근이 필요해요.',
+  }
+  return {
+    guide: '주식 비중을 줄이거나 현금·채권 비중을 높이는 전략을 고려해보세요.',
+    label: '경계 구간',
+    score,
+    summary: '진입 매력도가 낮은 구간이에요. 방어적으로 접근하는 게 좋아요.',
+  }
+}
+
+function buildHealthKPI(score: number): MarketEntryKPI {
+  if (score >= 70) return {
+    guide: '',
+    label: '안정적',
+    score,
+    summary: '금리 구조와 신용·유동성 환경이 모두 양호해 시장 구조가 건강해요.',
+  }
+  if (score >= 55) return {
+    guide: '',
+    label: '양호',
+    score,
+    summary: '시장 구조 지표 대부분이 건강한 편이에요.',
+  }
+  if (score >= 45) return {
+    guide: '',
+    label: '중립',
+    score,
+    summary: '건강 지표들이 혼재되어 있어 중립적인 시장 환경이에요.',
+  }
+  if (score >= 30) return {
+    guide: '',
+    label: '주의',
+    score,
+    summary: '금리나 신용 환경 일부에서 경고 신호가 나오고 있어요.',
+  }
+  return {
+    guide: '',
+    label: '경계',
+    score,
+    summary: '금리 역전, 신용 위험 등 구조적 경고가 복수로 나타나고 있어요.',
+  }
+}
+
+function buildOverview(indicators: MarketIndicator[]): MarketOverview {
+  // 진입 매력도: ERP(주식 vs 채권) + Fear&Greed(역발상 — 공포일수록 매력)
+  const entryIndicators = indicators.filter(i => ['erp', 'fearGreed'].includes(i.key))
+  const entryScore = computeKPIScore(entryIndicators, true)
+
+  // 시장 건강도: 금리 구조 + 신용 환경 + 유동성
+  const healthIndicators = indicators.filter(i => ['yieldCurve', 'creditSpread', 'm2'].includes(i.key))
+  const healthScore = computeKPIScore(healthIndicators, false)
+
+  return {
+    entry: buildEntryKPI(entryScore),
+    health: buildHealthKPI(healthScore),
+  }
 }

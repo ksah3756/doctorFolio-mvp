@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MarketCard } from '@/components/MarketCard'
-import { formatMacroStateLabel, type MarketResponse } from '@/lib/marketSignals'
+import type { MarketResponse } from '@/lib/marketSignals'
 import { loadMarketSignals } from '@/lib/marketSignalsClient'
 import styles from './page.module.css'
 
@@ -48,29 +48,53 @@ export default function MarketPage() {
     }
   }
 
+  const entry = market?.overview.entry
+  const health = market?.overview.health
+
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
         <div className={styles.eyebrow}>Macro Market Engine</div>
         <h1 className={styles.title}>오늘 시장 바람이 주식에 우호적인지 한 화면에서 확인해보세요.</h1>
-        <p className={styles.sub}>
-          장단기 금리차, 하이일드 스프레드, M2, Fear&amp;Greed, ERP를 묶어 Risk-On / 중립 / Risk-Off로 정리했어요.
-        </p>
 
         <div className={styles.heroCard}>
-          <div>
-            <div className={styles.heroLabel}>시장 상태</div>
-            <div className={styles.heroValue}>
-              {loading ? '정리 중…' : formatMacroStateLabel(market?.macroState ?? 'neutral')}
+          {/* 메인 KPI: 진입 매력도 */}
+          <div className={styles.entryBlock}>
+            <div className={styles.kpiEyebrow}>진입 매력도</div>
+            <div className={styles.kpiLabel}>
+              {loading ? '분석 중…' : (entry?.label ?? '중립')}
             </div>
-            <p className={styles.heroSummary}>
-              {error ?? market?.headline ?? '외부 시장 데이터를 불러오는 중입니다.'}
+            <div className={styles.kpiScore}>
+              <span className={styles.kpiScoreNum}>
+                {loading ? '--' : (entry?.score ?? 50)}
+              </span>
+              <span className={styles.kpiScoreUnit}>/100</span>
+            </div>
+            <p className={styles.kpiSummary}>
+              {loading ? '' : (entry?.summary ?? '')}
             </p>
           </div>
-          <div className={styles.heroMeta}>
-            <span className={`${styles.badge} ${styles[`badge_${market?.macroState ?? 'neutral'}`]}`}>
-              점수 {loading ? '...' : market?.macroScore ?? 0}
+
+          {/* 서브 KPI: 시장 건강도 */}
+          <div className={styles.healthChip}>
+            <span className={styles.healthEyebrow}>시장 건강도</span>
+            <span className={styles.healthLabel}>
+              {loading ? '--' : (health?.label ?? '중립')}
             </span>
+            <span className={styles.healthScore}>
+              {loading ? '' : `${health?.score ?? 50}/100`}
+            </span>
+          </div>
+
+          {/* 투자 시사점 */}
+          {!loading && entry?.guide && (
+            <div className={styles.implication}>
+              <span className={styles.implicationLabel}>투자 시사점</span>
+              <p className={styles.implicationText}>{entry.guide}</p>
+            </div>
+          )}
+
+          <div className={styles.heroMeta}>
             <button className={styles.refreshButton} onClick={() => void handleRefresh()}>
               최신 시장 다시 보기
             </button>
@@ -121,6 +145,8 @@ export default function MarketPage() {
                 <MarketCard key={indicator.key} indicator={indicator} />
               ))}
             </div>
+
+            <p className={styles.source}>데이터 출처: FRED, onoff.markets, multpl.com</p>
           </>
         )}
       </div>
