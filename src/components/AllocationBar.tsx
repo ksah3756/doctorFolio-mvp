@@ -35,6 +35,9 @@ export function AllocationBar({ current, target }: Props) {
               <div className={styles.targetLine} style={{ left: `${tgt}%` }} />
             </div>
             <div className={styles.pct}>{cur}%</div>
+            <div className={`${styles.targetLabel} ${isOver ? styles.targetOver : ''}`}>
+              목표 {tgt}%
+            </div>
           </div>
         )
       })}

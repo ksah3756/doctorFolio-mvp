@@ -6,5 +6,21 @@
 .fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
 .targetLine { position: absolute; top: -4px; width: 2px; height: 15px; background: rgba(255,255,255,.5); border-radius: 1px; }
 .pct { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.8); width: 32px; text-align: right; flex-shrink: 0; }
+.targetLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+  border-radius: 99px;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+.targetOver {
+  color: var(--amber);
+  background: rgba(232,168,56,0.18);
+  padding: 2px 6px;
+}
 .legend { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
 .legendLine { display: inline-block; width: 12px; height: 2px; background: rgba(255,255,255,.5); vertical-align: middle; border-radius: 1px; }

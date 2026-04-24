@@ -104,8 +104,8 @@
 
 .improvementBtn {
   width: 100%;
-  background: linear-gradient(135deg, rgba(26, 35, 126, 0.08), rgba(57, 73, 171, 0.02));
-  border: 1px solid rgba(26, 35, 126, 0.14);
+  background: var(--surface);
+  border: 1.5px solid var(--border-2);
   border-radius: var(--radius-card);
   padding: 16px 18px;
   font-size: 14px;
@@ -120,7 +120,7 @@
 }
 
 .improvementBtn:active {
-  background: linear-gradient(135deg, rgba(26, 35, 126, 0.14), rgba(57, 73, 171, 0.05));
+  background: var(--navy-tint);
 }
 
 .improvementBtnText {
@@ -139,7 +139,7 @@
 .improvementBtnMeta {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(26, 35, 126, 0.72);
+  color: var(--text-2);
   line-height: 1.45;
 }
 
@@ -151,8 +151,8 @@
 
 .signalBtn {
   width: 100%;
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(5, 150, 105, 0.03));
-  border: 1px solid rgba(5, 150, 105, 0.18);
+  background: var(--surface);
+  border: 1.5px solid var(--border-2);
   border-radius: var(--radius-card);
   padding: 16px 18px;
   display: flex;
@@ -160,6 +160,10 @@
   justify-content: space-between;
   gap: 14px;
   text-align: left;
+}
+
+.signalBtn:active {
+  background: var(--navy-tint);
 }
 
 .signalBtnText {
@@ -172,20 +176,20 @@
 .signalBtnTitle {
   font-size: 14px;
   font-weight: 800;
-  color: #065f46;
+  color: var(--navy);
 }
 
 .signalBtnMeta {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(6, 95, 70, 0.8);
+  color: var(--text-2);
   line-height: 1.45;
 }
 
 .signalBtnArrow {
   font-size: 16px;
   font-weight: 800;
-  color: #047857;
+  color: var(--navy);
   flex-shrink: 0;
 }
 
@@ -223,14 +227,11 @@
 .explainBody button { background: none; border: none; color: var(--navy); text-decoration: underline; font-size: 13px; }
 
 .disclaimer {
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
   font-size: 11px;
   color: var(--text-3);
   text-align: center;
   line-height: 1.6;
-  padding: 12px 14px;
+  padding: 4px 8px;
 }
 
 .disclaimer p + p { margin-top: 4px; }
@@ -251,19 +252,18 @@
 .mbtiCard {
   border-radius: var(--radius-card);
   padding: 20px 18px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 6px 24px rgba(28,43,94,0.25);
 }
 
 .mbtiEyebrow {
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: rgba(255,255,255,0.45);
 }
 
 .mbtiTop {
@@ -272,63 +272,63 @@
   gap: 14px;
 }
 
-.mbtiEmoji { font-size: 36px; line-height: 1; }
+.mbtiEmojiBox {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
 
 .mbtiCode {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1;
+  color: white;
 }
 
 .mbtiName {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-2);
+  color: rgba(255,255,255,0.7);
   margin-top: 4px;
 }
 
 .mbtiTagline {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-1);
+  color: white;
   line-height: 1.5;
 }
 
 .mbtiDesc {
   font-size: 13px;
-  color: var(--text-2);
+  color: rgba(255,255,255,0.65);
   line-height: 1.55;
 }
 
-/* 그룹별 포인트 컬러 */
-.mbtiGroup_analyst { border-color: var(--navy); }
-.mbtiGroup_analyst .mbtiCode { color: var(--navy); }
-
-.mbtiGroup_diplomat { border-color: #7c3aed; }
-.mbtiGroup_diplomat .mbtiCode { color: #7c3aed; }
-
-.mbtiGroup_sentinel { border-color: var(--green); }
-.mbtiGroup_sentinel .mbtiCode { color: var(--green); }
-
-.mbtiGroup_explorer { border-color: #ea580c; }
-.mbtiGroup_explorer .mbtiCode { color: #ea580c; }
+/* 그룹별 그라디언트 */
+.mbtiGroup_analyst  { background: linear-gradient(140deg, #1C2B5E 0%, #2d479b 100%); }
+.mbtiGroup_diplomat { background: linear-gradient(140deg, #4c1d95 0%, #7c3aed 100%); }
+.mbtiGroup_sentinel { background: linear-gradient(140deg, #064e3b 0%, #059669 100%); }
+.mbtiGroup_explorer { background: linear-gradient(140deg, #7c2d12 0%, #ea580c 100%); }
 
 /* 공유 버튼 */
 .shareBtn {
   align-self: flex-start;
   margin-top: 4px;
-  background: none;
-  border: 1.5px solid var(--border-2);
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.35);
   border-radius: var(--radius-btn);
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-2);
-  transition: background 0.1s, color 0.1s;
+  color: white;
+  transition: background 0.1s;
 }
-.shareBtn:active { background: var(--bg); }
-.mbtiGroup_analyst .shareBtn { border-color: var(--navy); color: var(--navy); }
-.mbtiGroup_diplomat .shareBtn { border-color: #7c3aed; color: #7c3aed; }
-.mbtiGroup_sentinel .shareBtn { border-color: var(--green); color: var(--green); }
-.mbtiGroup_explorer .shareBtn { border-color: #ea580c; color: #ea580c; }
+.shareBtn:active { background: rgba(255,255,255,0.22); }

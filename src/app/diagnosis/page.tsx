@@ -286,7 +286,7 @@ export default function DiagnosisPage() {
         <div className={`${styles.mbtiCard} ${styles[`mbtiGroup_${mbtiProfile.group}`]}`}>
           <div className={styles.mbtiEyebrow}>나의 투자 MBTI</div>
           <div className={styles.mbtiTop}>
-            <span className={styles.mbtiEmoji} aria-hidden="true">{mbtiProfile.emoji}</span>
+            <div className={styles.mbtiEmojiBox} aria-hidden="true">{mbtiProfile.emoji}</div>
             <div>
               <div className={styles.mbtiCode}>{mbtiProfile.type}</div>
               <div className={styles.mbtiName}>{mbtiProfile.name}</div>
