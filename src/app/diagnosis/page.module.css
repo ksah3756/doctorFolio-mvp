@@ -64,7 +64,7 @@
   letter-spacing: -0.04em;
 }
 
-.body { padding: 14px 16px 100px; display: flex; flex-direction: column; gap: 8px; }
+.body { padding: 14px 16px 112px; display: flex; flex-direction: column; gap: 8px; }
 
 .improvementSection {
   display: flex;

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
 import { ActionItem } from '@/components/ActionItem'
+import { BottomNav } from '@/components/BottomNav'
 import { SectorPieChart } from '@/components/SectorPieChart'
 import { ImprovementSheet } from '@/components/ImprovementSheet'
 import { DIAGNOSIS_DISCLAIMER_LINES } from '@/lib/disclaimers'
@@ -322,6 +323,7 @@ export default function DiagnosisPage() {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
       />
+      <BottomNav />
     </div>
   )
 }

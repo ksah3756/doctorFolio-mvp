@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { BottomNav } from '@/components/BottomNav'
 import { MarketCard } from '@/components/MarketCard'
 import type { MarketResponse } from '@/lib/marketSignals'
 import { loadMarketSignals } from '@/lib/marketSignalsClient'
@@ -150,6 +151,7 @@ export default function MarketPage() {
           </>
         )}
       </div>
+      <BottomNav />
     </div>
   )
 }
