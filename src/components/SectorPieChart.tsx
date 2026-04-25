@@ -80,10 +80,7 @@ export function SectorPieChart({ slices }: SectorPieChartProps) {
               x="60"
               y="53"
               textAnchor="middle"
-              fontSize="12"
-              fontWeight="800"
-              fill="#1C2B5E"
-              fontFamily="Noto Sans KR"
+              className={styles.chartValue}
             >
               {formatShare(leadSlice.share)}
             </text>
@@ -91,9 +88,7 @@ export function SectorPieChart({ slices }: SectorPieChartProps) {
               x="60"
               y="68"
               textAnchor="middle"
-              fontSize="8.5"
-              fill="#999"
-              fontFamily="Noto Sans KR"
+              className={styles.chartLabel}
             >
               {leadSlice.sector}
             </text>

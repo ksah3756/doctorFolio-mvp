@@ -70,6 +70,8 @@ describe('buildMarketResponse', () => {
     expect(response.overview.entry.label).toBe('진입 검토 가능')
     expect(response.overview.health.score).toBe(51)
     expect(response.overview.health.label).toBe('중립')
+    expect(response.overview.entry.guide).not.toBe(response.overview.entry.summary)
+    expect(response.overview.health.guide).not.toBe(response.overview.health.summary)
   })
 })
 

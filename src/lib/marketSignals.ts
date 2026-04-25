@@ -44,6 +44,8 @@ export interface MarketInput {
   yieldSpread: number | null
 }
 
+type MarketKPIContent = Pick<MarketEntryKPI, 'guide' | 'summary'>
+
 interface MarketSnapshotInput {
   equityRiskPremium: number | null
   fearGreed: FearGreedSnapshot | null
@@ -506,67 +508,57 @@ function formatSignedNumber(value: number): string {
 
 function buildEntryKPI(score: number): MarketEntryKPI {
   if (score >= 75) return {
-    guide: '시장 리스크가 크지 않고 주식의 상대 매력도도 괜찮은 편이에요. 종목별로 분할 접근을 검토하기 좋은 구간이에요.',
+    ...buildEntryKPIContent('high'),
     label: '분할 진입 매력 높음',
     score,
-    summary: '시장 리스크가 크지 않고 주식의 상대 매력도도 괜찮은 편이에요. 종목별로 분할 접근을 검토하기 좋은 구간이에요.',
   }
   if (score >= 60) return {
-    guide: '시장 불안 요소가 일부 있지만, 분할로 접근하면 기회를 노려볼 수 있는 구간이에요.',
+    ...buildEntryKPIContent('midHigh'),
     label: '진입 검토 가능',
     score,
-    summary: '시장 불안 요소가 일부 있지만, 분할로 접근하면 기회를 노려볼 수 있는 구간이에요.',
   }
   if (score >= 45) return {
-    guide: '시장 방향이 뚜렷하지 않아 조금 더 지켜보는 전략이 좋아요.',
+    ...buildEntryKPIContent('mid'),
     label: '신중한 관망',
     score,
-    summary: '시장 방향이 뚜렷하지 않아 조금 더 지켜보는 전략이 좋아요.',
   }
   if (score >= 30) return {
-    guide: '변동성이 커질 수 있는 구간이라 신규 진입은 신중하게 접근하는 게 좋아요.',
+    ...buildEntryKPIContent('midLow'),
     label: '진입 부담 높음',
     score,
-    summary: '변동성이 커질 수 있는 구간이라 신규 진입은 신중하게 접근하는 게 좋아요.',
   }
   return {
-    guide: '시장 리스크가 높은 구간이에요. 지금은 기회보다 리스크 관리가 더 중요한 시점이에요.',
+    ...buildEntryKPIContent('low'),
     label: '리스크 우선 관리',
     score,
-    summary: '시장 리스크가 높은 구간이에요. 지금은 기회보다 리스크 관리가 더 중요한 시점이에요.',
   }
 }
 
 function buildHealthKPI(score: number): MarketEntryKPI {
   if (score >= 75) return {
-    guide: '시장 환경이 전반적으로 안정적인 상태예요.',
+    ...buildHealthKPIContent('high'),
     label: '안정',
     score,
-    summary: '시장 환경이 전반적으로 안정적인 상태예요.',
   }
   if (score >= 60) return {
-    guide: '시장 리스크는 크지 않지만 일부 변수는 확인이 필요해요.',
+    ...buildHealthKPIContent('midHigh'),
     label: '양호',
     score,
-    summary: '시장 리스크는 크지 않지만 일부 변수는 확인이 필요해요.',
   }
   if (score >= 45) return {
-    guide: '시장 방향성이 뚜렷하지 않은 구간이에요.',
+    ...buildHealthKPIContent('mid'),
     label: '중립',
     score,
-    summary: '시장 방향성이 뚜렷하지 않은 구간이에요.',
   }
   if (score >= 30) return {
-    guide: '시장 변동성이 커지고 있는 구간이에요.',
+    ...buildHealthKPIContent('midLow'),
     label: '불안',
     score,
-    summary: '시장 변동성이 커지고 있는 구간이에요.',
   }
   return {
-    guide: '시장 불안이 큰 상태로 리스크 관리가 중요한 구간이에요.',
+    ...buildHealthKPIContent('low'),
     label: '공포',
     score,
-    summary: '시장 불안이 큰 상태로 리스크 관리가 중요한 구간이에요.',
   }
 }
 
@@ -689,4 +681,74 @@ function weightedAverage(entries: Array<[number, number]>): number {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
+}
+
+function buildEntryKPIContent(tier: 'high' | 'midHigh' | 'mid' | 'midLow' | 'low'): MarketKPIContent {
+  if (tier === 'high') {
+    return {
+      guide: '종목별로 분할 접근을 검토해도 괜찮은 구간이에요.',
+      summary: '시장 리스크가 크지 않고 주식의 상대 매력도도 괜찮은 편이에요.',
+    }
+  }
+
+  if (tier === 'midHigh') {
+    return {
+      guide: '한 번에 진입하기보다 분할로 기회를 노리는 접근이 좋아요.',
+      summary: '시장 불안 요소가 일부 있지만, 진입 기회를 살펴볼 수 있는 구간이에요.',
+    }
+  }
+
+  if (tier === 'mid') {
+    return {
+      guide: '지금은 신규 진입보다 방향을 조금 더 확인하는 편이 안전해요.',
+      summary: '시장 방향이 뚜렷하지 않아 서두를 이유가 크지 않아요.',
+    }
+  }
+
+  if (tier === 'midLow') {
+    return {
+      guide: '신규 진입은 신중하게 보고, 비중을 크게 늘리진 않는 편이 좋아요.',
+      summary: '변동성이 커질 수 있어 공격적으로 들어가기엔 부담이 있는 구간이에요.',
+    }
+  }
+
+  return {
+    guide: '지금은 기회보다 리스크 관리에 더 무게를 두는 편이 좋아요.',
+    summary: '시장 리스크가 높은 구간이라 방어적으로 대응하는 게 우선이에요.',
+  }
+}
+
+function buildHealthKPIContent(tier: 'high' | 'midHigh' | 'mid' | 'midLow' | 'low'): MarketKPIContent {
+  if (tier === 'high') {
+    return {
+      guide: '시장 전반의 구조가 비교적 안정적이라 큰 경계 신호는 적은 편이에요.',
+      summary: '시장 환경이 전반적으로 안정적인 상태예요.',
+    }
+  }
+
+  if (tier === 'midHigh') {
+    return {
+      guide: '전반 흐름은 양호하지만 세부 변수는 계속 확인할 필요가 있어요.',
+      summary: '시장 리스크는 크지 않지만 일부 변수는 확인이 필요해요.',
+    }
+  }
+
+  if (tier === 'mid') {
+    return {
+      guide: '좋은 신호와 나쁜 신호가 섞여 있어 한쪽으로 단정하기 어려워요.',
+      summary: '시장 방향성이 뚜렷하지 않은 구간이에요.',
+    }
+  }
+
+  if (tier === 'midLow') {
+    return {
+      guide: '경계 신호가 늘고 있어 변동성 확대 가능성을 염두에 두는 게 좋아요.',
+      summary: '시장 변동성이 커지고 있는 구간이에요.',
+    }
+  }
+
+  return {
+    guide: '리스크 신호가 강해 방어적인 자산 배분이 더 중요해지는 구간이에요.',
+    summary: '시장 불안이 큰 상태로 리스크 관리가 중요한 구간이에요.',
+  }
 }

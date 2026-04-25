@@ -63,6 +63,17 @@
   flex-shrink: 0;
 }
 
+.chartValue {
+  font-size: 12px;
+  font-weight: 800;
+  fill: #1c2b5e;
+}
+
+.chartLabel {
+  font-size: 8.5px;
+  fill: #999;
+}
+
 .legend {
   flex: 1;
 }
