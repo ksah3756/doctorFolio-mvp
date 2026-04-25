@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildMarketResponse,
+  calculateEntryAttractiveness,
+  calculateMarketHealth,
   extractSp500PeRatio,
   formatMacroStateLabel,
 } from './marketSignals'
@@ -49,6 +51,25 @@ describe('buildMarketResponse', () => {
 
     expect(response.macroState).toBe('risk_off')
     expect(response.macroScore).toBe(-1)
+    expect(response.overview.entry.label).toBe('신중한 관망')
+    expect(response.overview.health.label).toBe('불안')
+  })
+
+  it('프롬프트 기준 점수 체계로 진입 매력도와 시장 건강도를 계산한다', () => {
+    const response = buildMarketResponse({
+      equityRiskPremium: 3.2,
+      fearGreed: { label: 'Fear', score: 23 },
+      fetchedAt: '2026-04-19T00:00:00.000Z',
+      highYieldSpread: 4.2,
+      m2YearOverYear: 4.5,
+      treasury10YearRate: 4.1,
+      treasury2YearRate: 4.6,
+    })
+
+    expect(response.overview.entry.score).toBe(62)
+    expect(response.overview.entry.label).toBe('진입 검토 가능')
+    expect(response.overview.health.score).toBe(51)
+    expect(response.overview.health.label).toBe('중립')
   })
 })
 
@@ -62,5 +83,29 @@ describe('market signal helpers', () => {
   it('멀티플 HTML에서 S&P 500 PE 값을 파싱한다', () => {
     expect(extractSp500PeRatio('<div>Current S&P 500 PE Ratio is 30.62</div>')).toBe(30.62)
     expect(extractSp500PeRatio('<html>missing</html>')).toBeNull()
+  })
+
+  it('진입 매력도는 공포 기회와 패널티를 함께 반영한다', () => {
+    const score = calculateEntryAttractiveness({
+      equityRiskPremium: 3.5,
+      fearGreed: 20,
+      highYieldSpread: 4.1,
+      m2GrowthYoY: 5,
+      yieldSpread: -0.5,
+    })
+
+    expect(score).toBe(62)
+  })
+
+  it('시장 건강도는 가중 평균으로 계산한다', () => {
+    const score = calculateMarketHealth({
+      equityRiskPremium: 3.5,
+      fearGreed: 20,
+      highYieldSpread: 4.1,
+      m2GrowthYoY: 5,
+      yieldSpread: -0.5,
+    })
+
+    expect(score).toBe(51)
   })
 })

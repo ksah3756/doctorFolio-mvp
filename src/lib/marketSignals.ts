@@ -36,6 +36,14 @@ export interface MarketResponse {
   overview: MarketOverview
 }
 
+export interface MarketInput {
+  equityRiskPremium: number | null
+  fearGreed: number | null
+  highYieldSpread: number | null
+  m2GrowthYoY: number | null
+  yieldSpread: number | null
+}
+
 interface MarketSnapshotInput {
   equityRiskPremium: number | null
   fearGreed: FearGreedSnapshot | null
@@ -111,7 +119,13 @@ export function buildMarketResponse(input: MarketSnapshotInput): MarketResponse 
     indicators,
     macroScore,
     macroState,
-    overview: buildOverview(indicators),
+    overview: buildOverview({
+      equityRiskPremium: input.equityRiskPremium,
+      fearGreed: input.fearGreed?.score ?? null,
+      highYieldSpread: input.highYieldSpread,
+      m2GrowthYoY: input.m2YearOverYear,
+      yieldSpread: yieldCurveSpread,
+    }),
   }
 }
 
@@ -490,106 +504,189 @@ function formatSignedNumber(value: number): string {
   return `${value >= 0 ? '+' : ''}${formatNumber(value)}`
 }
 
-function invertStatus(status: MarketIndicatorStatus): MarketIndicatorStatus {
-  if (status === 'positive') return 'negative'
-  if (status === 'negative') return 'positive'
-  return status
-}
-
-function computeKPIScore(
-  indicators: MarketIndicator[],
-  invertFearGreed: boolean,
-): number {
-  const scored = indicators.filter(i => i.status !== 'unavailable')
-  if (scored.length === 0) return 50
-
-  const total = scored.reduce((sum, i) => {
-    const status = (invertFearGreed && i.key === 'fearGreed')
-      ? invertStatus(i.status)
-      : i.status
-    return sum + scoreIndicator(status)
-  }, 0)
-
-  return Math.round(((total / scored.length) + 1) * 50)
-}
-
 function buildEntryKPI(score: number): MarketEntryKPI {
-  if (score >= 70) return {
-    guide: '새로운 자금을 분할 매수로 천천히 진입하거나 비중을 늘려볼 수 있는 환경이에요.',
-    label: '매력적인 환경',
+  if (score >= 75) return {
+    guide: '시장 리스크가 크지 않고 주식의 상대 매력도도 괜찮은 편이에요. 종목별로 분할 접근을 검토하기 좋은 구간이에요.',
+    label: '분할 진입 매력 높음',
     score,
-    summary: '주식 기대수익이 채권보다 높고 투자심리도 저점권에 있어 진입 매력도가 높아요.',
+    summary: '시장 리스크가 크지 않고 주식의 상대 매력도도 괜찮은 편이에요. 종목별로 분할 접근을 검토하기 좋은 구간이에요.',
   }
-  if (score >= 55) return {
-    guide: '기존 포트폴리오를 유지하면서 여유 자금은 조금씩 추가해볼 수 있어요.',
-    label: '우호적',
+  if (score >= 60) return {
+    guide: '시장 불안 요소가 일부 있지만, 분할로 접근하면 기회를 노려볼 수 있는 구간이에요.',
+    label: '진입 검토 가능',
     score,
-    summary: '시장 환경이 전반적으로 주식에 우호적인 구간이에요.',
+    summary: '시장 불안 요소가 일부 있지만, 분할로 접근하면 기회를 노려볼 수 있는 구간이에요.',
   }
   if (score >= 45) return {
-    guide: '현재 비중을 유지하면서 방향을 지켜보는 게 좋아요.',
-    label: '중립',
+    guide: '시장 방향이 뚜렷하지 않아 조금 더 지켜보는 전략이 좋아요.',
+    label: '신중한 관망',
     score,
-    summary: '매력도가 한쪽으로 크게 기울지 않아 서두를 이유가 없는 구간이에요.',
+    summary: '시장 방향이 뚜렷하지 않아 조금 더 지켜보는 전략이 좋아요.',
   }
   if (score >= 30) return {
-    guide: '무리한 추가 매수보다 현재 비중 유지나 일부 조정을 고려해보세요.',
-    label: '신중 필요',
+    guide: '변동성이 커질 수 있는 구간이라 신규 진입은 신중하게 접근하는 게 좋아요.',
+    label: '진입 부담 높음',
     score,
-    summary: '주식 매력도가 채권 대비 줄어들고 있어 신중한 접근이 필요해요.',
+    summary: '변동성이 커질 수 있는 구간이라 신규 진입은 신중하게 접근하는 게 좋아요.',
   }
   return {
-    guide: '주식 비중을 줄이거나 현금·채권 비중을 높이는 전략을 고려해보세요.',
-    label: '경계 구간',
+    guide: '시장 리스크가 높은 구간이에요. 지금은 기회보다 리스크 관리가 더 중요한 시점이에요.',
+    label: '리스크 우선 관리',
     score,
-    summary: '진입 매력도가 낮은 구간이에요. 방어적으로 접근하는 게 좋아요.',
+    summary: '시장 리스크가 높은 구간이에요. 지금은 기회보다 리스크 관리가 더 중요한 시점이에요.',
   }
 }
 
 function buildHealthKPI(score: number): MarketEntryKPI {
-  if (score >= 70) return {
-    guide: '',
-    label: '안정적',
+  if (score >= 75) return {
+    guide: '시장 환경이 전반적으로 안정적인 상태예요.',
+    label: '안정',
     score,
-    summary: '금리 구조와 신용·유동성 환경이 모두 양호해 시장 구조가 건강해요.',
+    summary: '시장 환경이 전반적으로 안정적인 상태예요.',
   }
-  if (score >= 55) return {
-    guide: '',
+  if (score >= 60) return {
+    guide: '시장 리스크는 크지 않지만 일부 변수는 확인이 필요해요.',
     label: '양호',
     score,
-    summary: '시장 구조 지표 대부분이 건강한 편이에요.',
+    summary: '시장 리스크는 크지 않지만 일부 변수는 확인이 필요해요.',
   }
   if (score >= 45) return {
-    guide: '',
+    guide: '시장 방향성이 뚜렷하지 않은 구간이에요.',
     label: '중립',
     score,
-    summary: '건강 지표들이 혼재되어 있어 중립적인 시장 환경이에요.',
+    summary: '시장 방향성이 뚜렷하지 않은 구간이에요.',
   }
   if (score >= 30) return {
-    guide: '',
-    label: '주의',
+    guide: '시장 변동성이 커지고 있는 구간이에요.',
+    label: '불안',
     score,
-    summary: '금리나 신용 환경 일부에서 경고 신호가 나오고 있어요.',
+    summary: '시장 변동성이 커지고 있는 구간이에요.',
   }
   return {
-    guide: '',
-    label: '경계',
+    guide: '시장 불안이 큰 상태로 리스크 관리가 중요한 구간이에요.',
+    label: '공포',
     score,
-    summary: '금리 역전, 신용 위험 등 구조적 경고가 복수로 나타나고 있어요.',
+    summary: '시장 불안이 큰 상태로 리스크 관리가 중요한 구간이에요.',
   }
 }
 
-function buildOverview(indicators: MarketIndicator[]): MarketOverview {
-  // 진입 매력도: ERP(주식 vs 채권) + Fear&Greed(역발상 — 공포일수록 매력)
-  const entryIndicators = indicators.filter(i => ['erp', 'fearGreed'].includes(i.key))
-  const entryScore = computeKPIScore(entryIndicators, true)
-
-  // 시장 건강도: 금리 구조 + 신용 환경 + 유동성
-  const healthIndicators = indicators.filter(i => ['yieldCurve', 'creditSpread', 'm2'].includes(i.key))
-  const healthScore = computeKPIScore(healthIndicators, false)
+function buildOverview(input: MarketInput): MarketOverview {
+  const entryScore = calculateEntryAttractiveness(input)
+  const healthScore = calculateMarketHealth(input)
 
   return {
     entry: buildEntryKPI(entryScore),
     health: buildHealthKPI(healthScore),
   }
+}
+
+export function calculateEntryAttractiveness(input: MarketInput): number {
+  const contrarian = scoreContrarian(input.fearGreed)
+  const equity = scoreERP(input.equityRiskPremium)
+  const safety = scoreCredit(input.highYieldSpread)
+  const liquidity = scoreLiquidity(input.m2GrowthYoY)
+
+  const base = (
+    contrarian * 0.35
+    + equity * 0.25
+    + safety * 0.25
+    + liquidity * 0.15
+  )
+
+  const penalty = getCyclePenalty(input.yieldSpread) + getOverheatingPenalty(input.fearGreed)
+  return clamp(Math.round(base - penalty), 0, 100)
+}
+
+export function calculateMarketHealth(input: MarketInput): number {
+  return weightedAverage([
+    [scoreFearGreed(input.fearGreed), 1.2],
+    [scoreYieldSpread(input.yieldSpread), 1.3],
+    [scoreERP(input.equityRiskPremium), 1.2],
+    [scoreCredit(input.highYieldSpread), 1.5],
+    [scoreLiquidity(input.m2GrowthYoY), 0.8],
+  ])
+}
+
+export function scoreContrarian(fg: number | null): number {
+  if (fg === null) return 50
+  if (fg < 10) return 70
+  if (fg < 25) return 85
+  if (fg < 40) return 75
+  if (fg < 60) return 55
+  if (fg < 75) return 35
+  return 20
+}
+
+export function scoreFearGreed(fg: number | null): number {
+  if (fg === null) return 50
+  if (fg < 10) return 15
+  if (fg < 25) return 25
+  if (fg < 40) return 40
+  if (fg < 60) return 55
+  if (fg < 75) return 75
+  return 90
+}
+
+export function scoreERP(erp: number | null): number {
+  if (erp === null) return 50
+  if (erp < 1) return 20
+  if (erp < 2.5) return 40
+  if (erp < 4) return 60
+  if (erp < 6) return 80
+  return 70
+}
+
+export function scoreCredit(spread: number | null): number {
+  if (spread === null) return 50
+  if (spread < 3.5) return 90
+  if (spread < 5) return 75
+  if (spread < 7) return 50
+  if (spread < 10) return 25
+  return 10
+}
+
+export function scoreLiquidity(m2: number | null): number {
+  if (m2 === null) return 50
+  if (m2 < 0) return 25
+  if (m2 < 3) return 45
+  if (m2 < 7) return 70
+  if (m2 < 12) return 80
+  return 65
+}
+
+export function scoreYieldSpread(spread: number | null): number {
+  if (spread === null) return 50
+  if (spread < -1) return 10
+  if (spread < -0.3) return 25
+  if (spread < 0.2) return 45
+  if (spread < 1) return 70
+  return 85
+}
+
+export function getCyclePenalty(spread: number | null): number {
+  if (spread === null) return 0
+  if (spread < -1) return 18
+  if (spread < -0.3) return 12
+  if (spread < 0.2) return 5
+  return 0
+}
+
+export function getOverheatingPenalty(fg: number | null): number {
+  if (fg === null) return 0
+  if (fg >= 85) return 25
+  if (fg >= 75) return 18
+  if (fg >= 65) return 8
+  return 0
+}
+
+function weightedAverage(entries: Array<[number, number]>): number {
+  const totalWeight = entries.reduce((sum, [, weight]) => sum + weight, 0)
+  if (totalWeight === 0) return 50
+
+  const weightedTotal = entries.reduce((sum, [score, weight]) => sum + (score * weight), 0)
+  return clamp(Math.round(weightedTotal / totalWeight), 0, 100)
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
 }

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
-import { ActionItem } from '@/components/ActionItem'
 import { BottomNav } from '@/components/BottomNav'
 import { SectorPieChart } from '@/components/SectorPieChart'
 import { ImprovementSheet } from '@/components/ImprovementSheet'
@@ -67,6 +66,13 @@ function readStoredDiagnosis(): DiagnosisResult | null {
 
 function isStyleKey(value: unknown): value is StyleKey {
   return typeof value === 'string' && STYLE_KEYS.includes(value as StyleKey)
+}
+
+function formatDiagnosisDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
 }
 
 function readDesiredStyle(positions: PortfolioPosition[]): StyleKey {
@@ -157,40 +163,60 @@ export default function DiagnosisPage() {
 
   if (!isClient || !diagnosis) return null
 
-  const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  const today = formatDiagnosisDate(new Date())
   const isHealthy = diagnosis.problems.length === 0
   const target = diagnosis.targetAllocation
   const targetErrorMessage = getTargetAllocationErrorMessage(target)
   const sectorSlices = buildSectorAllocation(positions)
   const currentScore = computeHealthScore(diagnosis.currentAllocation, target, positions, desiredStyle)
   const idealScore = computeIdealScore(diagnosis.currentAllocation, positions, desiredStyle)
-  const hasActions = diagnosis.actions.length > 0
   const scorePreview = idealScore > currentScore
     ? `건강점수 ${currentScore}점 → ${idealScore}점`
     : `건강점수 ${currentScore}점 기준으로 전체 비중 확인`
 
   return (
     <div className={styles.wrap}>
-      {/* 네이비 헤더 */}
       <div className={styles.header}>
-        <div className={styles.date}>포트폴리오 진단 결과 · {today}</div>
-        {isHealthy ? (
-          <div className={styles.healthy}>
-            <div className={styles.checkIcon}>✓</div>
-            <div className={styles.healthyTitle}>포트폴리오가 양호합니다</div>
+        <div className={styles.headerCard}>
+          <div className={styles.headerTopRow}>
+            <div className={styles.date}>포트폴리오 진단 결과 · {today}</div>
+            <button className={styles.retryBtn} type="button" onClick={() => router.push('/')}>
+              다시 진단
+            </button>
           </div>
-        ) : (
-          <>
-            <div className={styles.headline}>최적화할 수 있는</div>
-            <div className={styles.bigNum}>{diagnosis.problems.length}<em>가지</em></div>
-            <div className={styles.subline}>포인트가 있습니다</div>
-          </>
-        )}
-        <div className={styles.healthScore}>
-          <span className={styles.healthScoreLabel}>건강점수</span>
-          <strong className={styles.healthScoreValue}>{currentScore}점</strong>
+          <div className={styles.headerBody}>
+            {isHealthy ? (
+              <>
+                <div className={styles.headline}>현재 포트폴리오는</div>
+                <div className={styles.healthyTitle}>전반적으로 안정적입니다</div>
+                <div className={styles.subline}>큰 편중 없이 자산 배분이 유지되고 있어요</div>
+              </>
+            ) : (
+              <>
+                <div className={styles.headline}>최적화할 수 있는</div>
+                <div className={styles.bigNum}>{diagnosis.problems.length}<em>가지</em></div>
+                <div className={styles.healthScore}>
+                  <span className={styles.healthScoreDot} aria-hidden="true" />
+                  <span className={styles.healthScoreLabel}>포인트가 있습니다</span>
+                </div>
+              </>
+            )}
+            {isHealthy && (
+              <div className={styles.healthScore}>
+                <span className={styles.healthScoreDot} aria-hidden="true" />
+                <span className={styles.healthScoreLabel}>건강점수</span>
+                <strong className={styles.healthScoreValue}>{currentScore}점</strong>
+              </div>
+            )}
+          </div>
+          <div className={styles.allocationPanel}>
+            <div className={styles.allocationPanelHeader}>
+              <span className={styles.allocationPanelTitle}>자산 배분</span>
+              <span className={styles.allocationPanelMeta}>세로선은 목표 비중</span>
+            </div>
+            <AllocationBar current={diagnosis.currentAllocation} target={target} />
+          </div>
         </div>
-        <AllocationBar current={diagnosis.currentAllocation} target={target} />
         {targetErrorMessage && (
           <p className={styles.targetError} role="alert">
             {targetErrorMessage}
@@ -211,23 +237,6 @@ export default function DiagnosisPage() {
             </>
           )}
 
-          {hasActions && (
-            <>
-              <div className={styles.sectionLabel}>권장 조치</div>
-              <div className={styles.actionCard}>
-                {diagnosis.actions.map(action => (
-                  <ActionItem
-                    key={`${action.action}-${action.ticker}-${action.quantity}`}
-                    action={action}
-                  />
-                ))}
-              </div>
-              <p className={styles.fineLine}>
-                현재가는 캡처 시점 기준입니다. 실제 주문 전 가격과 세금은 다시 확인하세요.
-              </p>
-            </>
-          )}
-
           <button
             className={styles.improvementBtn}
             type="button"
@@ -236,7 +245,7 @@ export default function DiagnosisPage() {
             <div className={styles.improvementBtnText}>
               <span className={styles.improvementBtnTitle}>포트폴리오 개선 보기</span>
               <span className={styles.improvementBtnMeta}>
-                {scorePreview} · 현재/목표 비중 상세
+                {scorePreview} · 현재/목표 비중과 점수 차이를 확인할 수 있어요
               </span>
             </div>
             <span className={styles.improvementBtnArrow} aria-hidden="true">→</span>
@@ -255,7 +264,6 @@ export default function DiagnosisPage() {
 
         {sectorSlices.length > 0 && <SectorPieChart slices={sectorSlices} />}
 
-        {/* 왜 이 조언인가요? */}
         <button
           className={`${styles.explainBtn} ${explainOpen ? styles.explainOpen : ''}`}
           type="button"
@@ -310,10 +318,6 @@ export default function DiagnosisPage() {
             <p key={line}>{line}</p>
           ))}
         </div>
-
-        <button className={styles.resetBtn} type="button" onClick={() => router.push('/')}>
-          ↩ 다시 진단하기
-        </button>
       </div>
       <ImprovementSheet
         currentAllocation={diagnosis.currentAllocation}

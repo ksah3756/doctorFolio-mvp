@@ -1,114 +1,111 @@
 /* src/components/ProblemCard.module.css */
 .card {
-  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 16px 18px 16px 20px;
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-}
-.red::before { background: var(--red); }
-.amber::before { background: var(--amber); }
-
-.top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-.num {
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  padding: 3px 10px;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.badgeHigh {
+  background: #fef2f2;
+  color: #e6514a;
+}
+
+.badgeMedium {
+  background: #fff8ea;
+  color: #d97706;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotHigh {
+  background: #e6514a;
+}
+
+.dotMedium {
+  background: #d97706;
 }
 
 .title {
-  font-size: 16px;
+  margin-bottom: 14px;
+  font-size: 17px;
   font-weight: 800;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.03em;
   line-height: 1.3;
-}
-
-.severityBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.severityHigh {
-  background: var(--red-bg);
-  color: var(--red);
-}
-
-.severityMedium {
-  background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  color: var(--text-1);
 }
 
 .metrics {
   display: flex;
   align-items: stretch;
-  gap: 0;
-  padding: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  gap: 8px;
+  margin-bottom: 12px;
   border-radius: 14px;
   background: #f7f8fc;
-  margin-bottom: 2px;
+  padding: 14px;
 }
 
 .metric {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 4px;
-}
-
-.metric:last-child {
-  align-items: flex-end;
-  text-align: right;
+  text-align: center;
 }
 
 .metricLabel {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--text-3);
+  font-weight: 500;
+  color: #aaa;
 }
 
 .metricValue {
-  font-size: 24px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.9px;
+  font-size: 32px;
+  font-weight: 900;
   line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #bbb;
 }
 
-.currentRed { color: var(--red); }
-.currentAmber { color: var(--amber); }
+.currentRed {
+  color: #e24d4d;
+}
+
+.currentAmber {
+  color: #d97706;
+}
 
 .metricDivider {
   width: 1px;
+  margin: 0;
   background: #e8e8ec;
-  margin: 0 8px;
   border-radius: 1px;
 }
 
 .desc {
-  font-size: 12px;
-  color: var(--text-2);
-  line-height: 1.6;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: #666;
 }

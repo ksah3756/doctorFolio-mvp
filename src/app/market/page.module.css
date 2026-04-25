@@ -1,222 +1,253 @@
 .wrap {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 30%),
-    linear-gradient(180deg, var(--navy-dark) 0 280px, var(--bg) 280px 100%);
+  background: #edeef3;
+}
+
+.page {
+  min-height: 100dvh;
+  padding-bottom: 88px;
 }
 
 .header {
-  padding: 24px 20px 28px;
-  color: #fff;
+  padding: 20px 18px 14px;
 }
 
 .eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.64);
+  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #999;
 }
 
 .title {
-  margin-top: 10px;
-  font-size: 32px;
-  line-height: 1.12;
-  letter-spacing: -0.05em;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #111;
 }
 
-.sub {
-  margin-top: 12px;
-  max-width: 680px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.8);
+.description {
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #aaa;
+}
+
+.content {
+  padding: 0 0 16px;
+}
+
+.heroCard,
+.stateCard,
+.skeletonCard {
+  margin: 0 16px 12px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .heroCard {
-  display: grid;
-  gap: 14px;
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 18px 16px;
 }
 
-/* 메인 KPI: 진입 매력도 */
-.entryBlock { display: grid; gap: 6px; }
-
-.kpiEyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.kpiLabel {
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-.kpiScore {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-  margin-top: 2px;
-}
-
-.kpiScoreNum {
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: -0.06em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.kpiScoreUnit {
-  font-size: 16px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.56);
-}
-
-.kpiSummary {
-  margin-top: 6px;
+.sectionTitle {
+  margin-bottom: 4px;
   font-size: 13px;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+  color: #111;
 }
 
-/* 서브 KPI: 시장 건강도 */
-.healthChip {
+.heroIntro {
+  margin-bottom: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #aaa;
+}
+
+.heroBody {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 20px;
 }
 
-.healthEyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.56);
+.gauge {
+  width: 116px;
+  height: 66px;
   flex-shrink: 0;
 }
 
-.healthLabel {
-  font-size: 14px;
+.gaugeLabel {
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  flex: 1;
 }
 
-.healthScore {
+.gaugeCaption {
+  font-size: 8px;
+  fill: #aaa;
+}
+
+.legend {
+  flex: 1;
+  min-width: 0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+
+.legendItem:last-child {
+  margin-bottom: 0;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #e8e8ec;
+}
+
+.legendLabel {
+  font-size: 12px;
+  font-weight: 400;
+  color: #bbb;
+}
+
+.legendActiveLabel {
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.56);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
+  color: #111;
 }
 
-/* 투자 시사점 */
-.implication {
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: grid;
-  gap: 6px;
+.accentGreen {
+  fill: #23b26d;
+  stroke: #23b26d;
+  background: #23b26d;
+  color: #23b26d;
 }
 
-.implicationLabel {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.56);
+.accentNavy {
+  fill: #1c2b5e;
+  stroke: #1c2b5e;
+  background: #1c2b5e;
+  color: #1c2b5e;
 }
 
-.implicationText {
-  font-size: 13px;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.84);
+.accentAmber {
+  fill: #e8a838;
+  stroke: #e8a838;
+  background: #e8a838;
+  color: #e8a838;
 }
 
-.heroMeta {
+.accentRed {
+  fill: #e24d4d;
+  stroke: #e24d4d;
+  background: #e24d4d;
+  color: #e24d4d;
+}
+
+.callout {
+  margin-top: 14px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.calloutLabel {
+  font-weight: 700;
+}
+
+.accentGreenBackground {
+  background: rgba(35, 178, 109, 0.08);
+}
+
+.accentGreenBackground .calloutLabel {
+  color: #23b26d;
+}
+
+.accentNavyBackground {
+  background: rgba(28, 43, 94, 0.08);
+}
+
+.accentNavyBackground .calloutLabel {
+  color: #1c2b5e;
+}
+
+.accentAmberBackground {
+  background: rgba(232, 168, 56, 0.08);
+}
+
+.accentAmberBackground .calloutLabel {
+  color: #e8a838;
+}
+
+.accentRedBackground {
+  background: rgba(226, 77, 77, 0.08);
+}
+
+.accentRedBackground .calloutLabel {
+  color: #e24d4d;
+}
+
+.sectionHeader {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px 10px;
+}
+
+.sectionEyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
 }
 
 .refreshButton,
-.secondaryLink,
 .inlineRetry {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  border-radius: var(--radius-btn);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.refreshButton {
   border: none;
-  padding: 0 16px;
-  background: #fff;
-  color: var(--navy-dark);
+  background: rgba(28, 43, 94, 0.08);
+  color: #1c2b5e;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.body {
-  padding: 0 16px 112px;
-}
-
-.actions {
-  margin-top: -10px;
-  margin-bottom: 16px;
-}
-
-.secondaryLink {
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--navy);
-  border: 1px solid rgba(26, 35, 126, 0.12);
+.cardList {
+  display: grid;
+  gap: 0;
 }
 
 .metaRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  padding: 6px 16px 0;
 }
 
 .metaBadge {
   border-radius: 999px;
-  padding: 9px 12px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--border);
-  font-size: 12px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #e3e5ea;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-2);
+  color: #7b7f89;
 }
 
-.cardGrid {
-  display: grid;
-  gap: 14px;
-}
-
-.stateCard,
-.skeletonCard {
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.88);
+.source {
+  margin: 6px 16px 0;
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+  color: #bbb;
 }
 
 .stateCard {
@@ -228,69 +259,130 @@
 
 .inlineRetry {
   margin-top: 12px;
-  padding: 0 16px;
-  border: 1px solid rgba(26, 35, 126, 0.14);
-  background: var(--surface);
-  color: var(--navy);
 }
 
-.skeletonCard {
-  padding: 18px;
+.heroSkeletonBody,
+.skeletonRow {
+  display: flex;
+  align-items: center;
+}
+
+.heroSkeletonBody {
+  gap: 20px;
+}
+
+.skeletonGauge,
+.skeletonTitle,
+.skeletonLine,
+.skeletonLineLong,
+.skeletonTitleShort,
+.skeletonLegendRow,
+.skeletonLegendRowShort,
+.skeletonCallout,
+.skeletonIcon,
+.skeletonBadge {
+  background: linear-gradient(90deg, #f2f3f7, #e7e9ef, #f2f3f7);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
 }
 
 .skeletonTitle,
-.skeletonValue,
 .skeletonLine,
-.skeletonLineShort {
+.skeletonLineLong,
+.skeletonTitleShort,
+.skeletonLegendRow,
+.skeletonLegendRowShort {
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(232, 234, 246, 0.9), rgba(244, 246, 255, 0.9));
 }
 
 .skeletonTitle {
-  width: 110px;
-  height: 14px;
+  width: 92px;
+  height: 13px;
+  margin-bottom: 8px;
 }
 
-.skeletonValue {
-  width: 140px;
-  height: 34px;
-  margin-top: 16px;
-}
-
-.skeletonLine,
-.skeletonLineShort {
+.skeletonLineLong {
+  width: 180px;
   height: 12px;
+  margin-bottom: 18px;
+}
+
+.skeletonGauge {
+  width: 116px;
+  height: 66px;
+  border-radius: 16px;
+}
+
+.skeletonLegend {
+  flex: 1;
+}
+
+.skeletonLegendRow,
+.skeletonLegendRowShort {
+  height: 12px;
+  margin-bottom: 8px;
+}
+
+.skeletonLegendRow {
+  width: 76px;
+}
+
+.skeletonLegendRowShort {
+  width: 58px;
+  margin-bottom: 0;
+}
+
+.skeletonCallout {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
   margin-top: 14px;
 }
 
-.skeletonLineShort {
-  width: 72%;
+.skeletonCard {
+  padding: 14px 16px;
+  margin-bottom: 8px;
 }
 
-.source {
-  margin-top: 20px;
-  font-size: 11px;
-  color: var(--text-3);
-  text-align: center;
+.skeletonRow {
+  gap: 12px;
 }
 
-@media (min-width: 768px) {
-  .header {
-    padding: 32px 32px 36px;
+.skeletonIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.skeletonText {
+  flex: 1;
+}
+
+.skeletonTitleShort {
+  width: 74px;
+  height: 13px;
+  margin-bottom: 8px;
+}
+
+.skeletonLine {
+  width: 180px;
+  height: 11px;
+}
+
+.skeletonBadge {
+  width: 44px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
   }
 
-  .heroCard,
-  .body {
-    max-width: 980px;
-    margin: 0 auto;
-  }
-
-  .body {
-    padding: 0 24px 128px;
-  }
-
-  .cardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+  to {
+    background-position: -200% 0;
   }
 }

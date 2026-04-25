@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import type { SectorAllocationSlice } from '@/lib/sectorAllocation'
 import styles from './SectorPieChart.module.css'
 
-const SLICE_COLORS = ['#1A237E', '#3949AB', '#059669', '#D97706', '#E11D48']
+const SLICE_COLORS = ['#1C2B5E', '#E8A838', '#23B26D', '#E24D4D', '#9B8FD4']
 
 function formatAmount(value: number): string {
   return `${Math.round(value / 10_000).toLocaleString('ko-KR')}만원`
@@ -22,21 +22,21 @@ export function SectorPieChart({ slices }: SectorPieChartProps) {
     return null
   }
 
-  const totalValue = slices.reduce((sum, slice) => sum + slice.value, 0)
-  const chartFill = slices
-    .map((slice, index) => {
-      const startValue = slices
-        .slice(0, index)
-        .reduce((sum, current) => sum + current.value, 0)
-      const start = (startValue / totalValue) * 100
-      const end = ((startValue + slice.value) / totalValue) * 100
-      const color = SLICE_COLORS[index % SLICE_COLORS.length]
-
-      return `${color} ${start}% ${end}%`
-    })
-    .join(', ')
-
   const leadSlice = slices[0]
+  const radius = 44
+  const circumference = 2 * Math.PI * radius
+  const segments = slices.map((slice, index) => {
+    const cumulativeShare = slices
+      .slice(0, index)
+      .reduce((sum, current) => sum + current.share, 0)
+
+    return {
+      ...slice,
+      color: SLICE_COLORS[index % SLICE_COLORS.length],
+      dashLength: (slice.share / 100) * circumference,
+      dashOffset: circumference - (cumulativeShare / 100) * circumference,
+    }
+  })
 
   return (
     <section className={styles.card} aria-labelledby="sector-allocation-title">
@@ -44,27 +44,60 @@ export function SectorPieChart({ slices }: SectorPieChartProps) {
         <div>
           <div className={styles.eyebrow}>Sector Mix</div>
           <h2 id="sector-allocation-title" className={styles.title}>섹터 비중</h2>
-          <p className={styles.caption}>확정한 종목의 평가금액 기준으로 섹터 분산 상태를 한눈에 봅니다.</p>
+          <p className={styles.caption}>평가금액 기준으로 섹터 분산 상태를 한눈에 봅니다.</p>
         </div>
         <div className={styles.topSector}>최대 {leadSlice.sector}</div>
       </div>
 
       <div className={styles.content}>
         <div className={styles.chartWrap}>
-          <div
+          <svg
+            width="118"
+            height="118"
+            viewBox="0 0 120 120"
             className={styles.chart}
-            style={{ '--chart-fill': chartFill } as CSSProperties}
             role="img"
             aria-label={slices.map(slice => `${slice.sector} ${formatShare(slice.share)}`).join(', ')}
           >
-            <div className={styles.chartCenter}>
-              <div>
-                <div className={styles.centerLabel}>Top Sector</div>
-                <div className={styles.centerValue}>{formatShare(leadSlice.share)}</div>
-                <div className={styles.centerDesc}>{leadSlice.sector}</div>
-              </div>
-            </div>
-          </div>
+            {segments.map(slice => {
+              return (
+                <circle
+                  key={slice.sector}
+                  cx="60"
+                  cy="60"
+                  r={radius}
+                  fill="none"
+                  stroke={slice.color}
+                  strokeWidth="16"
+                  strokeDasharray={`${slice.dashLength} ${circumference - slice.dashLength}`}
+                  strokeDashoffset={slice.dashOffset}
+                  transform="rotate(-90 60 60)"
+                />
+              )
+            })}
+            <circle cx="60" cy="60" r="33" fill="white" />
+            <text
+              x="60"
+              y="53"
+              textAnchor="middle"
+              fontSize="12"
+              fontWeight="800"
+              fill="#1C2B5E"
+              fontFamily="Noto Sans KR"
+            >
+              {formatShare(leadSlice.share)}
+            </text>
+            <text
+              x="60"
+              y="68"
+              textAnchor="middle"
+              fontSize="8.5"
+              fill="#999"
+              fontFamily="Noto Sans KR"
+            >
+              {leadSlice.sector}
+            </text>
+          </svg>
         </div>
 
         <div className={styles.legend}>

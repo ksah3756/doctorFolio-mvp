@@ -7,14 +7,14 @@
 
 ## 1. Visual Theme & Atmosphere
 
-포트폴리오 닥터는 의사 리포트 느낌의 진단 도구다 — 마케팅 랜딩 페이지가 아니다. 디자인 언어는 "당신의 포트폴리오를 정확하게 읽겠다"는 신뢰를 딥 네이비(`#1A237E`)로 전달한다. 배경은 네이비 틴트(`#F4F6FF`)로 미묘하게 브랜드를 물들이고, 카드와 패널은 흰색 표면 위에 올라앉아 정보 밀도를 높인다.
+포트폴리오 닥터는 의사 리포트 느낌의 진단 도구다. 디자인 언어는 "당신의 포트폴리오를 정확하게 읽겠다"는 신뢰를 딥 네이비 `rgb(28, 43, 94)` (`#1C2B5E`)로 전달한다. 배경은 네이비 틴트(`#F4F6FF`)로 미묘하게 브랜드를 물들이고, 카드와 패널은 흰색 표면 위에 올라앉아 정보 밀도를 높인다.
 
 타이포그래피는 Pretendard Variable 단일 패밀리로 구성된다. 진단 숫자는 42px weight 800, 자간 -2px로 숫자가 화면을 압도한다. 이건 의도적이다 — 유저는 숫자를 먼저 읽고, 맥락을 뒤에 읽는다. 버튼은 border-radius 12px의 둥근 직사각형. 풀 필이 아닌 이유는 앱 도구의 정밀함을 표현하기 위해서다.
 
 시맨틱 컬러는 진단 결과에 직접 매핑된다. 빨강(`--red`)은 심각한 편중, 앰버(`--amber`)는 개선 권고, 초록(`--green`)은 양호 상태. 그림자 없음 — 깊이는 색상 대비와 보더로 표현한다.
 
 **핵심 특성:**
-- 딥 네이비(`#1A237E`) 단일 브랜드 액센트 — 그라디언트 없음
+- 딥 네이비(`rgb(28, 43, 94)` / `#1C2B5E`) 단일 브랜드 액센트
 - `#F4F6FF` 배경 + 흰색 카드 표면 — 정보 계층 분리
 - 버튼 radius 12px — 도구적 정밀함, 풀 필 아님
 - Pretendard Variable 단일 패밀리, weight 400–800
@@ -30,10 +30,10 @@
 
 | 토큰 | 값 | 역할 |
 |------|-----|------|
-| `--navy` | `#1A237E` | 메인 브랜드, CTA, 헤드라인, 진단 대형 숫자 |
-| `--navy-dark` | `#121858` | 버튼 호버, 눌림 상태 |
-| `--navy-mid` | `#3949AB` | 보조 강조, 링크 |
-| `--navy-tint` | `#E8EAF6` | 배지 배경, 하이라이트 |
+| `--navy` | `#1C2B5E` | 메인 브랜드, CTA, 헤더 카드, 진단 핵심 숫자 |
+| `--navy-dark` | `#16224A` | 버튼 호버, 눌림 상태 |
+| `--navy-mid` | `#30457F` | 보조 강조, 링크 |
+| `--navy-tint` | `#E9EDF6` | 배지 배경, 하이라이트 |
 
 ### 레이아웃
 
@@ -81,7 +81,7 @@
 | 인라인 에러 텍스트 | `--red` |
 | 섹션 레이블 | `--text-3` |
 
-**금지:** 네이비 그라디언트. `--navy`를 배경 전체에 깔기. 텍스트에 `--navy-tint` 사용.
+**금지:** 헤더 바 전체를 네이비로 꽉 채우는 처리. 텍스트에 `--navy-tint` 사용.
 
 ---
 
@@ -200,16 +200,33 @@ padding: 16px
 ```
 배경: --surface
 border: 1px solid --border
-border-radius: 14px
-padding: 18px 20px 18px 22px
-border-left: 3px solid (--red 심각 | --amber 주의)
+border-radius: 28px~36px
+padding: 26px~36px
+shadow: 0 18px 36px rgba(15, 23, 42, 0.06)
 
-[번호] 01 · 자산 편중         10px 800 uppercase --text-3
-[제목] 국내주식에 너무 쏠려 있습니다   17px 800 --text-1
-[수치] 81%  →  40% 목표
-        ↑ 36px 800 tabular-nums (--red or --amber)
-               ↑ 18px 700 --text-2
-[설명] 13px 400 --text-2 line-height 1.6
+[상단 배지] ● 01 · 섹터 집중
+  - 심각: pale red pill + red dot/text
+  - 주의: pale amber pill + amber dot/text
+
+[제목] 반도체 섹터 비중이 높습니다
+  - 26px~33px / 800 / tight tracking
+
+[수치 패널]
+  background: #F6F7FC
+  border-radius: 24px~28px
+  2열 중앙 정렬
+  가운데 1px divider
+
+  현재        | 적정 상한
+  46.7%       | 50%
+
+  - label: 13px~15px / 700 / muted gray
+  - current value: semantic red or amber
+  - target value: neutral gray
+
+[설명]
+  14px~18px / 600 / line-height 1.55
+  섹터 분산을 위해 일부 비중 조정이 필요합니다.
 ```
 
 ---

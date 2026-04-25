@@ -1,10 +1,10 @@
 .card {
-  background: var(--surface);
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
+  border-radius: 18px;
+  background: var(--surface);
   padding: 18px;
-  display: grid;
-  gap: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .header {
@@ -12,151 +12,115 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 4px;
 }
 
 .eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  margin-bottom: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: #bbb;
 }
 
 .title {
-  margin-top: 4px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--text-1);
+  color: #111;
 }
 
 .caption {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-2);
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #999;
 }
 
 .topSector {
   flex-shrink: 0;
-  background: var(--bg);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 12px;
+  border-radius: 99px;
+  background: rgba(226, 77, 77, 0.063);
+  padding: 4px 10px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--text-2);
+  color: #e24d4d;
   white-space: nowrap;
 }
 
 .content {
-  display: grid;
-  gap: 18px;
+  display: flex;
   align-items: center;
+  gap: 14px;
 }
 
 .chartWrap {
-  display: grid;
-  place-items: center;
+  flex-shrink: 0;
 }
 
 .chart {
-  width: 184px;
-  height: 184px;
-  border-radius: 50%;
-  background: conic-gradient(var(--chart-fill));
-  position: relative;
-  box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.04);
-}
-
-.chart::after {
-  content: '';
-  position: absolute;
-  inset: 28px;
-  border-radius: 50%;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--border);
-}
-
-.chartCenter {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 0 42px;
-}
-
-.centerLabel {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.centerValue {
-  margin-top: 6px;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--text-1);
-}
-
-.centerDesc {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-2);
+  flex-shrink: 0;
 }
 
 .legend {
-  display: grid;
-  gap: 10px;
+  flex: 1;
 }
 
 .legendItem {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+
+.legendItem:last-child {
+  margin-bottom: 0;
 }
 
 .legendDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   background: var(--slice-color);
+  flex-shrink: 0;
 }
 
 .legendLabel {
-  min-width: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-1);
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
 }
 
 .legendMeta {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  color: var(--text-2);
-  white-space: nowrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .legendShare {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-1);
+  min-width: 36px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  color: #111;
 }
 
 .legendValue {
-  font-size: 12px;
-  color: var(--text-3);
+  min-width: 42px;
+  font-size: 11px;
+  text-align: right;
+  color: #ccc;
 }
 
-@media (min-width: 720px) {
+@media (max-width: 420px) {
   .content {
-    grid-template-columns: 184px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .legendMeta {
+    gap: 6px;
   }
 }

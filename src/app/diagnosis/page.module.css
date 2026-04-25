@@ -1,70 +1,166 @@
 /* src/app/diagnosis/page.module.css */
-.wrap { display: flex; flex-direction: column; min-height: 100dvh; }
+.wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--bg);
+}
 
-.header { background: var(--navy); padding: 20px 20px 20px; }
+.header {
+  padding: 0;
+}
+
+.headerCard {
+  overflow: hidden;
+  margin: 16px 16px 0;
+  border-radius: 20px;
+  background: var(--navy);
+}
+
+.headerTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 0;
+}
+
 .date {
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.5);
-  margin-bottom: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
 }
-.headline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 2px; }
+
+.retryBtn {
+  border: none;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.retryBtn:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.headerBody {
+  padding: 16px 18px 0;
+}
+
+.headline {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .bigNum {
-  font-size: 42px;
-  font-weight: 800;
+  margin-bottom: 4px;
+  font-size: 52px;
+  font-weight: 900;
   letter-spacing: -2px;
   line-height: 1;
   color: #fff;
-  margin-bottom: 4px;
 }
+
 .bigNum em {
   margin-left: 6px;
   font-style: normal;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: rgba(255,255,255,.7);
-  vertical-align: middle;
+  color: rgba(255, 255, 255, 0.85);
+  vertical-align: 8px;
 }
-.subline { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.75); margin-bottom: 10px; }
+
+.healthyTitle {
+  margin-bottom: 6px;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+  color: #fff;
+}
+
+.subline {
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.healthScore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 12px;
+  margin-bottom: 20px;
+}
+
+.healthScoreDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f2ae34;
+}
+
+.healthScoreLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.healthScoreValue {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.allocationPanel {
+  margin: 0 12px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 14px 16px;
+}
+
+.allocationPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.allocationPanelTitle {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.allocationPanelMeta {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
 .targetError {
   margin-top: 10px;
+  padding: 0 4px;
   font-size: 12px;
   font-weight: 700;
   color: #ffb4b4;
 }
 
-/* 양호 상태 */
-.healthy { margin-bottom: 12px; }
-.checkIcon { font-size: 32px; color: var(--green); margin-bottom: 8px; }
-.healthyTitle { font-size: 22px; font-weight: 800; color: #fff; }
-
-.healthScore {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 10px 14px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 999px;
-  background: rgba(255,255,255,0.08);
-  color: #fff;
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px 112px;
 }
-
-.healthScoreLabel {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.72);
-}
-
-.healthScoreValue {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
-
-.body { padding: 14px 16px 112px; display: flex; flex-direction: column; gap: 8px; }
 
 .improvementSection {
   display: flex;
@@ -73,12 +169,12 @@
 }
 
 .sectionLabel {
+  padding: 10px 4px 2px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
-  padding: 10px 4px 4px;
 }
 
 .problemList {
@@ -87,105 +183,56 @@
   gap: 8px;
 }
 
-.actionCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-}
-
-.fineLine {
-  margin-top: -2px;
-  padding: 0 4px;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--text-3);
-}
-
-.improvementBtn {
+.improvementBtn,
+.signalBtn,
+.explainBtn {
   width: 100%;
-  background: var(--surface);
-  border: 1.5px solid var(--border-2);
   border-radius: var(--radius-card);
-  padding: 16px 18px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--navy);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  letter-spacing: -0.2px;
+  background: var(--surface);
   text-align: left;
 }
 
-.improvementBtn:active {
-  background: var(--navy-tint);
-}
-
-.improvementBtnText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.improvementBtnTitle {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--navy);
-}
-
-.improvementBtnMeta {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-2);
-  line-height: 1.45;
-}
-
-.improvementBtnArrow {
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
+.improvementBtn,
 .signalBtn {
-  width: 100%;
-  background: var(--surface);
-  border: 1.5px solid var(--border-2);
-  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
   padding: 16px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  text-align: left;
 }
 
-.signalBtn:active {
-  background: var(--navy-tint);
+.improvementBtn:active,
+.signalBtn:active,
+.explainBtn:active {
+  background: #f7f8fc;
 }
 
+.improvementBtnText,
 .signalBtnText {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
+.improvementBtnTitle,
 .signalBtnTitle {
   font-size: 14px;
   font-weight: 800;
-  color: var(--navy);
+  letter-spacing: -0.02em;
+  color: var(--text-1);
 }
 
+.improvementBtnMeta,
 .signalBtnMeta {
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.5;
   color: var(--text-2);
-  line-height: 1.45;
 }
 
+.improvementBtnArrow,
 .signalBtnArrow {
   font-size: 16px;
   font-weight: 800;
@@ -194,10 +241,7 @@
 }
 
 .explainBtn {
-  width: 100%;
-  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
   padding: 16px 18px;
   font-size: 14px;
   font-weight: 700;
@@ -205,57 +249,50 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  letter-spacing: -0.2px;
-  transition: background 0.1s;
+  letter-spacing: -0.02em;
 }
-.explainBtn:active { background: var(--bg); }
-.explainIcon { font-size: 11px; transition: transform 0.2s; }
-.explainOpen .explainIcon { transform: rotate(180deg); }
+
+.explainIcon {
+  font-size: 11px;
+  transition: transform 0.2s;
+}
+
+.explainOpen .explainIcon {
+  transform: rotate(180deg);
+}
 
 .explainBody {
-  background: var(--surface);
+  margin-top: -10px;
   border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--surface);
   padding: 18px;
   font-size: 13px;
-  color: var(--text-2);
   line-height: 1.7;
-  margin-top: -8px;
-}
-.explainBody p + p { margin-top: 12px; }
-.explainBody button { background: none; border: none; color: var(--navy); text-decoration: underline; font-size: 13px; }
-
-.disclaimer {
-  font-size: 11px;
-  color: var(--text-3);
-  text-align: center;
-  line-height: 1.6;
-  padding: 4px 8px;
-}
-
-.disclaimer p + p { margin-top: 4px; }
-
-.resetBtn {
-  width: 100%;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-btn);
-  padding: 14px;
-  font-size: 13px;
-  font-weight: 600;
   color: var(--text-2);
 }
-.resetBtn:active { background: var(--border); }
 
-/* 투자 MBTI 카드 */
+.explainBody p + p {
+  margin-top: 12px;
+}
+
+.explainBody button {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--navy);
+  text-decoration: underline;
+}
+
 .mbtiCard {
   border-radius: var(--radius-card);
   padding: 20px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 6px 24px rgba(28,43,94,0.25);
+  gap: 12px;
+  box-shadow: 0 6px 24px rgba(28, 43, 94, 0.25);
 }
 
 .mbtiEyebrow {
@@ -263,7 +300,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .mbtiTop {
@@ -275,60 +312,82 @@
 .mbtiEmojiBox {
   width: 50px;
   height: 50px;
+  flex-shrink: 0;
   border-radius: 14px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  flex-shrink: 0;
 }
 
 .mbtiCode {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
   line-height: 1;
-  color: white;
+  color: #fff;
 }
 
 .mbtiName {
-  font-size: 14px;
+  margin-top: 3px;
+  font-size: 12px;
   font-weight: 600;
-  color: rgba(255,255,255,0.7);
-  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.52);
 }
 
 .mbtiTagline {
   font-size: 14px;
-  font-weight: 600;
-  color: white;
+  font-weight: 700;
   line-height: 1.5;
+  color: #fff;
 }
 
 .mbtiDesc {
-  font-size: 13px;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.55;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-/* 그룹별 그라디언트 */
-.mbtiGroup_analyst  { background: linear-gradient(140deg, #1C2B5E 0%, #2d479b 100%); }
-.mbtiGroup_diplomat { background: linear-gradient(140deg, #4c1d95 0%, #7c3aed 100%); }
-.mbtiGroup_sentinel { background: linear-gradient(140deg, #064e3b 0%, #059669 100%); }
-.mbtiGroup_explorer { background: linear-gradient(140deg, #7c2d12 0%, #ea580c 100%); }
+.mbtiGroup_analyst {
+  background: linear-gradient(140deg, #1c2b5e 0%, #2d479b 100%);
+}
 
-/* 공유 버튼 */
+.mbtiGroup_diplomat {
+  background: linear-gradient(140deg, #4c1d95 0%, #7c3aed 100%);
+}
+
+.mbtiGroup_sentinel {
+  background: linear-gradient(140deg, #064e3b 0%, #059669 100%);
+}
+
+.mbtiGroup_explorer {
+  background: linear-gradient(140deg, #7c2d12 0%, #ea580c 100%);
+}
+
 .shareBtn {
-  align-self: flex-start;
-  margin-top: 4px;
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.35);
-  border-radius: var(--radius-btn);
-  padding: 8px 16px;
+  align-self: stretch;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 13px 16px;
   font-size: 13px;
   font-weight: 700;
-  color: white;
-  transition: background 0.1s;
+  color: #fff;
 }
-.shareBtn:active { background: rgba(255,255,255,0.22); }
+
+.shareBtn:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.disclaimer {
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text-3);
+}
+
+.disclaimer p + p {
+  margin-top: 4px;
+}
