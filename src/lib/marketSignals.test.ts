@@ -20,8 +20,9 @@ describe('buildMarketResponse', () => {
     })
 
     expect(response.macroState).toBe('risk_on')
-    expect(response.macroScore).toBe(1)
-    expect(response.indicators.every(indicator => indicator.status === 'positive')).toBe(true)
+    expect(response.macroScore).toBe(0.8)
+    expect(response.indicators.find(indicator => indicator.key === 'erp')?.status).toBe('neutral')
+    expect(response.indicators.filter(indicator => indicator.status === 'positive')).toHaveLength(4)
   })
 
   it('모든 외부 지표를 못 받으면 중립으로 fallback 한다', () => {
@@ -50,7 +51,7 @@ describe('buildMarketResponse', () => {
     })
 
     expect(response.macroState).toBe('risk_off')
-    expect(response.macroScore).toBe(-1)
+    expect(response.macroScore).toBe(-0.8)
     expect(response.overview.entry.label).toBe('신중한 관망')
     expect(response.overview.health.label).toBe('불안')
   })

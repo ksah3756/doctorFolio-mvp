@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react'
 import { BottomNav } from '@/components/BottomNav'
 import { MarketCard } from '@/components/MarketCard'
-import { deriveCycleStage, type CycleStage } from '@/lib/cycleStage'
+import { buildMarketInsight } from '@/lib/marketInsightTemplates'
 import type { MarketResponse } from '@/lib/marketSignals'
 import { loadMarketSignals } from '@/lib/marketSignalsClient'
 import styles from './page.module.css'
 
 const SKELETON_COUNT = 5
-const CYCLE_STAGES = ['회복', '확장', '둔화', '침체'] as const
 const INDICATOR_ORDER = ['fearGreed', 'yieldCurve', 'erp', 'creditSpread', 'm2'] as const
 
 export default function MarketPage() {
@@ -51,7 +50,11 @@ export default function MarketPage() {
     }
   }
 
-  const cycle = market ? deriveCycleStage(market) : null
+  const entry = market?.overview.entry
+  const health = market?.overview.health
+  const insight = market && entry && health
+    ? buildMarketInsight(entry.score, health.score)
+    : null
   const orderedIndicators = market
     ? [...market.indicators].sort(
       (left, right) => INDICATOR_ORDER.indexOf(left.key) - INDICATOR_ORDER.indexOf(right.key),
@@ -72,18 +75,13 @@ export default function MarketPage() {
         <main className={styles.content}>
           {loading && (
             <section className={styles.heroCard} aria-hidden="true">
-              <div className={styles.skeletonTitle} />
-              <div className={styles.skeletonLineLong} />
-              <div className={styles.heroSkeletonBody}>
-                <div className={styles.skeletonGauge} />
-                <div className={styles.skeletonLegend}>
-                  <div className={styles.skeletonLegendRow} />
-                  <div className={styles.skeletonLegendRow} />
-                  <div className={styles.skeletonLegendRow} />
-                  <div className={styles.skeletonLegendRowShort} />
-                </div>
+              <div className={styles.skeletonKpiEyebrow} />
+              <div className={styles.skeletonKpiRow}>
+                <div className={styles.skeletonKpiScore} />
+                <div className={styles.skeletonKpiLabel} />
               </div>
-              <div className={styles.skeletonCallout} />
+              <div className={styles.skeletonLine} />
+              <div className={styles.skeletonHealthChip} />
             </section>
           )}
 
@@ -96,46 +94,63 @@ export default function MarketPage() {
             </div>
           )}
 
-          {!loading && market && cycle && (
-            <>
-              <section className={styles.heroCard}>
-                <div className={styles.sectionTitle}>경기 사이클 위치</div>
-                <p className={styles.heroIntro}>{cycle.description}</p>
-
-                <div className={styles.heroBody}>
-                  <CycleGauge cycle={cycle} />
-
-                  <div className={styles.legend}>
-                    {CYCLE_STAGES.map(stage => {
-                      const active = stage === cycle.label
-
-                      return (
-                        <div key={stage} className={styles.legendItem}>
-                          <span
-                            className={`${styles.legendDot} ${active ? styles[cycle.accentClassName] : ''}`}
-                            aria-hidden="true"
-                          />
-                          <span className={active ? styles.legendActiveLabel : styles.legendLabel}>
-                            {stage}
-                          </span>
-                        </div>
-                      )
-                    })}
+          {!loading && market && entry && health && (
+            <section className={styles.heroCard}>
+              <div className={styles.entryBlock}>
+                <div className={styles.kpiEyebrow}>진입 매력도</div>
+                <div className={styles.kpiRow}>
+                  <div className={styles.kpiScore}>
+                    <span className={styles.kpiScoreNum}>{entry.score}</span>
+                    <span className={styles.kpiScoreUnit}>/100</span>
                   </div>
+                  <div className={styles.kpiLabel}>{entry.label}</div>
                 </div>
-
-                <div className={`${styles.callout} ${styles[`${cycle.accentClassName}Background`]}`}>
-                  <strong className={styles.calloutLabel}>투자 시사점:</strong> {cycle.summary}
-                </div>
-              </section>
-
-              <div className={styles.sectionHeader}>
-                <div className={styles.sectionEyebrow}>5가지 신호 상세</div>
-                <button className={styles.refreshButton} onClick={() => void handleRefresh()}>
-                  새로고침
-                </button>
+                <p className={styles.kpiSummary}>{entry.summary}</p>
               </div>
 
+              <div className={styles.healthChip}>
+                <span className={styles.healthEyebrow}>시장 건강도</span>
+                <span className={styles.healthLabel}>{health.label}</span>
+                <span className={styles.healthScore}>{health.score}/100</span>
+              </div>
+
+              {insight && (
+                <div className={styles.implication}>
+                  <div className={styles.implicationLabel}>{insight.title}</div>
+                  <p className={styles.implicationText}>{insight.message}</p>
+                </div>
+              )}
+            </section>
+          )}
+
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>5가지 신호 상세</div>
+            {!loading && (
+              <button className={styles.refreshButton} onClick={() => void handleRefresh()}>
+                새로고침
+              </button>
+            )}
+          </div>
+
+          {loading && (
+            <div className={styles.cardList}>
+              {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                <div key={index} className={styles.skeletonCard} aria-hidden="true">
+                  <div className={styles.skeletonRow}>
+                    <div className={styles.skeletonIcon} />
+                    <div className={styles.skeletonText}>
+                      <div className={styles.skeletonTitleShort} />
+                      <div className={styles.skeletonLine} />
+                    </div>
+                    <div className={styles.skeletonBadge} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && market && (
+            <>
               <div className={styles.cardList}>
                 {orderedIndicators.map(indicator => (
                   <MarketCard key={indicator.key} indicator={indicator} />
@@ -152,72 +167,10 @@ export default function MarketPage() {
               <p className={styles.source}>데이터 출처: FRED, onoff.markets, multpl.com</p>
             </>
           )}
-
-          {loading && (
-            <>
-              <div className={styles.sectionHeader}>
-                <div className={styles.sectionEyebrow}>5가지 신호 상세</div>
-              </div>
-
-              <div className={styles.cardList}>
-                {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-                  <div key={index} className={styles.skeletonCard} aria-hidden="true">
-                    <div className={styles.skeletonRow}>
-                      <div className={styles.skeletonIcon} />
-                      <div className={styles.skeletonText}>
-                        <div className={styles.skeletonTitleShort} />
-                        <div className={styles.skeletonLine} />
-                      </div>
-                      <div className={styles.skeletonBadge} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
         </main>
       </div>
 
       <BottomNav />
     </div>
-  )
-}
-
-function CycleGauge({ cycle }: { cycle: CycleStage }) {
-  const dashLength = 151
-  const progressLength = dashLength * cycle.progress
-
-  return (
-    <svg className={styles.gauge} viewBox="0 0 116 66" aria-label={`현재 경기 사이클은 ${cycle.label}`}>
-      <path
-        d="M 10,58 A 48,48 0 0 1 106,58"
-        fill="none"
-        stroke="#f0f0f5"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 10,58 A 48,48 0 0 1 106,58"
-        fill="none"
-        className={styles[cycle.accentClassName]}
-        strokeWidth="10"
-        strokeLinecap="round"
-        strokeDasharray={`${progressLength} ${dashLength}`}
-      />
-      <circle
-        cx={cycle.point.x}
-        cy={cycle.point.y}
-        r="6"
-        className={styles[cycle.accentClassName]}
-        stroke="white"
-        strokeWidth="2"
-      />
-      <text x="58" y="52" textAnchor="middle" className={`${styles.gaugeLabel} ${styles[cycle.accentClassName]}`}>
-        {cycle.label}
-      </text>
-      <text x="58" y="63" textAnchor="middle" className={styles.gaugeCaption}>
-        {cycle.caption}
-      </text>
-    </svg>
   )
 }

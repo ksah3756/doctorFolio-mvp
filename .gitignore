@@ -3,3 +3,4 @@
 node_modules/
 REVIEW*.md
 docs/superpowers/
+.gstack/

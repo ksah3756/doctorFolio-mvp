@@ -47,151 +47,120 @@
 }
 
 .heroCard {
-  padding: 20px 18px 16px;
+  padding: 16px 18px 14px;
+  display: grid;
+  gap: 10px;
 }
 
-.sectionTitle {
-  margin-bottom: 4px;
-  font-size: 13px;
+/* KPI: 진입 매력도 */
+.entryBlock {
+  display: grid;
+  gap: 4px;
+}
+
+.kpiEyebrow {
+  font-size: 10px;
   font-weight: 700;
-  color: #111;
-}
-
-.heroIntro {
-  margin-bottom: 18px;
-  font-size: 12px;
-  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: #aaa;
 }
 
-.heroBody {
+.kpiRow {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
 }
 
-.gauge {
-  width: 116px;
-  height: 66px;
+.kpiScore {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.kpiScoreNum {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: #1c2b5e;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiScoreUnit {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ccc;
+}
+
+.kpiLabel {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1c2b5e;
+}
+
+.kpiSummary {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #888;
+}
+
+/* Sub KPI: 시장 건강도 */
+.healthChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f4f6ff;
+  border: 1px solid #e0e4f0;
+}
+
+.healthEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #aaa;
   flex-shrink: 0;
 }
 
-.gaugeLabel {
-  font-size: 11px;
+.healthLabel {
+  font-size: 13px;
   font-weight: 800;
-}
-
-.gaugeCaption {
-  font-size: 8px;
-  fill: #aaa;
-}
-
-.legend {
+  color: #333;
   flex: 1;
-  min-width: 0;
 }
 
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 7px;
-}
-
-.legendItem:last-child {
-  margin-bottom: 0;
-}
-
-.legendDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: #e8e8ec;
-}
-
-.legendLabel {
-  font-size: 12px;
-  font-weight: 400;
-  color: #bbb;
-}
-
-.legendActiveLabel {
+.healthScore {
   font-size: 12px;
   font-weight: 700;
-  color: #111;
+  color: #aaa;
+  font-variant-numeric: tabular-nums;
 }
 
-.accentGreen {
-  fill: #23b26d;
-  stroke: #23b26d;
-  background: #23b26d;
-  color: #23b26d;
+/* 투자 시사점 */
+.implication {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(28, 43, 94, 0.04);
 }
 
-.accentNavy {
-  fill: #1c2b5e;
-  stroke: #1c2b5e;
-  background: #1c2b5e;
-  color: #1c2b5e;
+.implicationLabel {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(28, 43, 94, 0.5);
 }
 
-.accentAmber {
-  fill: #e8a838;
-  stroke: #e8a838;
-  background: #e8a838;
-  color: #e8a838;
-}
-
-.accentRed {
-  fill: #e24d4d;
-  stroke: #e24d4d;
-  background: #e24d4d;
-  color: #e24d4d;
-}
-
-.callout {
-  margin-top: 14px;
-  border-radius: 12px;
-  padding: 10px 14px;
+.implicationText {
   font-size: 12px;
   line-height: 1.6;
-  color: #666;
-}
-
-.calloutLabel {
-  font-weight: 700;
-}
-
-.accentGreenBackground {
-  background: rgba(35, 178, 109, 0.08);
-}
-
-.accentGreenBackground .calloutLabel {
-  color: #23b26d;
-}
-
-.accentNavyBackground {
-  background: rgba(28, 43, 94, 0.08);
-}
-
-.accentNavyBackground .calloutLabel {
-  color: #1c2b5e;
-}
-
-.accentAmberBackground {
-  background: rgba(232, 168, 56, 0.08);
-}
-
-.accentAmberBackground .calloutLabel {
-  color: #e8a838;
-}
-
-.accentRedBackground {
-  background: rgba(226, 77, 77, 0.08);
-}
-
-.accentRedBackground .calloutLabel {
-  color: #e24d4d;
+  color: #555;
 }
 
 .sectionHeader {
@@ -261,24 +230,18 @@
   margin-top: 12px;
 }
 
-.heroSkeletonBody,
 .skeletonRow {
   display: flex;
   align-items: center;
 }
 
-.heroSkeletonBody {
-  gap: 20px;
-}
-
-.skeletonGauge,
-.skeletonTitle,
+.skeletonKpiEyebrow,
+.skeletonKpiRow,
+.skeletonKpiScore,
+.skeletonKpiLabel,
+.skeletonHealthChip,
 .skeletonLine,
-.skeletonLineLong,
 .skeletonTitleShort,
-.skeletonLegendRow,
-.skeletonLegendRowShort,
-.skeletonCallout,
 .skeletonIcon,
 .skeletonBadge {
   background: linear-gradient(90deg, #f2f3f7, #e7e9ef, #f2f3f7);
@@ -286,57 +249,42 @@
   animation: shimmer 1.4s linear infinite;
 }
 
-.skeletonTitle,
-.skeletonLine,
-.skeletonLineLong,
-.skeletonTitleShort,
-.skeletonLegendRow,
-.skeletonLegendRowShort {
+.skeletonKpiEyebrow {
+  width: 64px;
+  height: 10px;
   border-radius: 999px;
 }
 
-.skeletonTitle {
-  width: 92px;
-  height: 13px;
-  margin-bottom: 8px;
+.skeletonKpiRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  animation: none;
 }
 
-.skeletonLineLong {
+.skeletonKpiScore {
+  width: 72px;
+  height: 38px;
+  border-radius: 8px;
+}
+
+.skeletonKpiLabel {
+  width: 90px;
+  height: 16px;
+  border-radius: 999px;
+}
+
+.skeletonLine {
   width: 180px;
-  height: 12px;
-  margin-bottom: 18px;
+  height: 11px;
+  border-radius: 999px;
 }
 
-.skeletonGauge {
-  width: 116px;
-  height: 66px;
-  border-radius: 16px;
-}
-
-.skeletonLegend {
-  flex: 1;
-}
-
-.skeletonLegendRow,
-.skeletonLegendRowShort {
-  height: 12px;
-  margin-bottom: 8px;
-}
-
-.skeletonLegendRow {
-  width: 76px;
-}
-
-.skeletonLegendRowShort {
-  width: 58px;
-  margin-bottom: 0;
-}
-
-.skeletonCallout {
+.skeletonHealthChip {
   width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  margin-top: 14px;
+  height: 36px;
+  border-radius: 10px;
 }
 
 .skeletonCard {
