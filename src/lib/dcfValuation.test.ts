@@ -288,6 +288,21 @@ describe('calculateDcfValuation', () => {
     expect(result).not.toBeNull()
     expect(result!.marginOfSafety).toBeLessThan(0)
   })
+
+  it('tracks consensus-backed projection years in diagnostics', () => {
+    const result = calculateDcfValuation(makeInput({
+      consensusEbitEstimates: [
+        { year: 1, ebit: 280 },
+        { year: 2, ebit: 320 },
+      ],
+    }))
+
+    expect(result).not.toBeNull()
+    expect(result!.diagnostics.consensusYears).toBe(2)
+    expect(result!.projections[0]).toMatchObject({ year: 1, source: 'consensus', ebit: 280 })
+    expect(result!.projections[1]).toMatchObject({ year: 2, source: 'consensus', ebit: 320 })
+    expect(result!.projections[2]).toMatchObject({ year: 3, source: 'model' })
+  })
 })
 
 describe('computeProjectedEbitSeries', () => {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import damodaranBetas from '@/data/damodaranBetas.json'
 import { calculateDcfValuation } from '@/lib/dcfValuation'
 import { fetchImpliedErp } from '@/lib/damodaranErp'
-import { fetchFmpDcfSnapshot, toDcfInput } from '@/lib/fmpAdapter'
+import { fetchAnalystEbitEstimates, fetchFmpDcfSnapshot, toDcfInput } from '@/lib/fmpAdapter'
 
 const CACHE_HEADERS = {
   'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400',
@@ -28,19 +28,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [fmpSnapshot, equityRiskPremium] = await Promise.all([
+    const [fmpSnapshot, equityRiskPremium, consensusEbitEstimates] = await Promise.all([
       fetchFmpDcfSnapshot(ticker),
       fetchImpliedErp(),
+      fetchAnalystEbitEstimates(ticker),
     ])
 
     const industryUnleveredBeta = getIndustryUnleveredBeta(fmpSnapshot.sector)
-    const valuation = calculateDcfValuation(toDcfInput(fmpSnapshot, {
-      riskFreeRate: 0.043,
-      equityRiskPremium,
-      companyBeta: fmpSnapshot.companyBeta,
-      industryUnleveredBeta,
-      taxRate: 0.21,
-    }))
+    const valuation = calculateDcfValuation({
+      ...toDcfInput(fmpSnapshot, {
+        riskFreeRate: 0.043,
+        equityRiskPremium,
+        companyBeta: fmpSnapshot.companyBeta,
+        industryUnleveredBeta,
+        taxRate: 0.21,
+      }),
+      consensusEbitEstimates,
+    })
 
     if (valuation === null) {
       return NextResponse.json(
@@ -49,7 +53,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(valuation, { headers: CACHE_HEADERS })
+    return NextResponse.json(
+      {
+        ...valuation,
+        consensusYears: valuation.diagnostics.consensusYears,
+      },
+      { headers: CACHE_HEADERS },
+    )
   } catch (error) {
     console.error('dcf route failed', error)
 

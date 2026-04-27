@@ -72,6 +72,7 @@ export interface DcfResult {
     pvExplicitFcff: number
     pvTerminalValue: number
     terminalValueWeight: number
+    consensusYears: number
     quality: DcfQuality
     waccClamped: boolean
     deltaNwcUnavailable: boolean
@@ -185,6 +186,7 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
   const equityValue = enterpriseValue - totalDebt + cashAndEquivalents
   const marginOfSafety = (equityValue - input.marketCap) / input.marketCap
   const negativeEquity = equityValue < 0
+  const consensusYears = projections.filter(projection => projection.source === 'consensus').length
   const terminalValueWeight = enterpriseValue === 0 ? 0 : pvTerminalValue / enterpriseValue
 
   return {
@@ -208,6 +210,7 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
       pvExplicitFcff,
       pvTerminalValue,
       terminalValueWeight,
+      consensusYears,
       quality: classifyQuality({
         baseGrowth,
         terminalValueWeight,
