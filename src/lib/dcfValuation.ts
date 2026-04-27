@@ -29,6 +29,11 @@ export interface DamodaranInputs {
   taxRate?: number
 }
 
+export interface EbitConsensusEstimate {
+  year: number
+  ebit: number
+}
+
 export interface DcfInput {
   metrics: FinancialMetric[]
   lineItems: FinancialLineItem[]
@@ -36,6 +41,7 @@ export interface DcfInput {
   damodaran: DamodaranInputs
   projectionYears?: number
   terminalGrowth?: number
+  consensusEbitEstimates?: EbitConsensusEstimate[]
 }
 
 export type DcfQuality =
@@ -73,10 +79,19 @@ export interface DcfResult {
   }
   projections: Array<{
     year: number
+    ebit: number | null
     growth: number
     fcff: number
     presentValue: number
+    source: 'consensus' | 'model'
   }>
+}
+
+export interface ProjectedEbitPoint {
+  year: number
+  ebit: number
+  growth: number
+  source: 'consensus' | 'model'
 }
 
 const DEFAULT_BASE_GROWTH = 0.04
@@ -107,9 +122,13 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
   }
 
   const deltaNwc = computeDeltaNwc(input.lineItems)
-  const baseFcff = computeBaseFcff(latestLineItem, taxRate, deltaNwc.value)
+  const baseProjection = computeBaseFcff(latestLineItem, taxRate, deltaNwc.value)
 
-  if (baseFcff === null || baseFcff <= 0) {
+  if (baseProjection.baseFcff === null) {
+    return null
+  }
+
+  if (baseProjection.baseEbit !== null && baseProjection.baseEbit <= 0) {
     return null
   }
 
@@ -142,11 +161,20 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
 
   const baseGrowth = computeBaseGrowth(input.metrics, input.lineItems)
   const projections = buildProjections({
-    baseFcff,
+    baseEbit: baseProjection.baseEbit,
+    baseFcff: baseProjection.baseFcff,
     baseGrowth,
+    baseDepreciationAndAmortization: Math.max(
+      toFiniteNumber(latestLineItem.depreciationAndAmortization) ?? 0,
+      0,
+    ),
+    baseCapitalExpenditure: Math.abs(toFiniteNumber(latestLineItem.capitalExpenditure) ?? 0),
+    baseDeltaNwc: deltaNwc.value,
     projectionYears,
     terminalGrowth,
+    taxRate,
     wacc,
+    consensusEbitEstimates: input.consensusEbitEstimates,
   })
 
   const pvExplicitFcff = sum(projections.map(projection => projection.presentValue))
@@ -165,7 +193,7 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
     intrinsicValuePerShare: equityValue / outstandingShares,
     marginOfSafety,
     assumptions: {
-      baseFcff,
+      baseFcff: baseProjection.baseFcff,
       baseGrowth,
       terminalGrowth,
       wacc,
@@ -196,30 +224,74 @@ export function calculateDcfValuation(input: DcfInput): DcfResult | null {
 }
 
 function buildProjections(input: {
+  baseEbit: number | null
   baseFcff: number
   baseGrowth: number
+  baseDepreciationAndAmortization: number
+  baseCapitalExpenditure: number
+  baseDeltaNwc: number
   projectionYears: number
   terminalGrowth: number
+  taxRate: number
   wacc: number
+  consensusEbitEstimates?: EbitConsensusEstimate[]
 }): DcfResult['projections'] {
-  let fcff = input.baseFcff
+  if (input.baseEbit === null) {
+    let projectedFcff = input.baseFcff
 
-  return Array.from({ length: input.projectionYears }, (_, index) => {
-    const year = index + 1
-    const growth = interpolateGrowth({
-      baseGrowth: input.baseGrowth,
-      projectionYears: input.projectionYears,
-      terminalGrowth: input.terminalGrowth,
-      year,
+    return Array.from({ length: input.projectionYears }, (_, index) => {
+      const year = index + 1
+      const growth = interpolateGrowth({
+        baseGrowth: input.baseGrowth,
+        projectionYears: input.projectionYears,
+        terminalGrowth: input.terminalGrowth,
+        year,
+      })
+
+      projectedFcff *= (1 + growth)
+
+      return {
+        year,
+        ebit: null,
+        growth,
+        fcff: projectedFcff,
+        presentValue: projectedFcff / Math.pow(1 + input.wacc, year),
+        source: 'model',
+      }
     })
+  }
 
-    fcff *= (1 + growth)
+  const projectedEbitSeries = computeProjectedEbitSeries(
+    input.baseEbit,
+    input.baseGrowth,
+    input.terminalGrowth,
+    input.projectionYears,
+    input.consensusEbitEstimates,
+  )
+  let projectedDepreciationAndAmortization = input.baseDepreciationAndAmortization
+  let projectedCapitalExpenditure = input.baseCapitalExpenditure
+  let projectedDeltaNwc = input.baseDeltaNwc
+
+  return projectedEbitSeries.map(item => {
+    projectedDepreciationAndAmortization *= (1 + item.growth)
+    projectedCapitalExpenditure *= (1 + item.growth)
+    projectedDeltaNwc *= (1 + item.growth)
+
+    const fcff = computeProjectedFcffFromEbit(
+      item.ebit,
+      input.taxRate,
+      projectedDepreciationAndAmortization,
+      projectedCapitalExpenditure,
+      projectedDeltaNwc,
+    )
 
     return {
-      year,
-      growth,
+      year: item.year,
+      ebit: item.ebit,
+      growth: item.growth,
       fcff,
-      presentValue: fcff / Math.pow(1 + input.wacc, year),
+      presentValue: fcff / Math.pow(1 + input.wacc, item.year),
+      source: item.source,
     }
   })
 }
@@ -254,17 +326,75 @@ function computeBaseFcff(
   lineItem: FinancialLineItem,
   taxRate: number,
   deltaNwc: number,
-): number | null {
+): { baseEbit: number | null; baseFcff: number | null } {
   const ebit = toFiniteNumber(lineItem.ebit)
   const depreciationAndAmortization = toFiniteNumber(lineItem.depreciationAndAmortization)
   const capitalExpenditure = toFiniteNumber(lineItem.capitalExpenditure)
 
   if (ebit !== null && depreciationAndAmortization !== null && capitalExpenditure !== null) {
-    const nopat = ebit * (1 - taxRate)
-    return nopat + depreciationAndAmortization - Math.abs(capitalExpenditure) - deltaNwc
+    return {
+      baseEbit: ebit,
+      baseFcff: computeProjectedFcffFromEbit(
+        ebit,
+        taxRate,
+        depreciationAndAmortization,
+        Math.abs(capitalExpenditure),
+        deltaNwc,
+      ),
+    }
   }
 
-  return toFiniteNumber(lineItem.freeCashFlow)
+  return {
+    baseEbit: null,
+    baseFcff: toFiniteNumber(lineItem.freeCashFlow),
+  }
+}
+
+export function computeProjectedEbitSeries(
+  baseEbit: number,
+  fallbackBaseGrowth: number,
+  terminalGrowth: number,
+  projectionYears: number,
+  consensusEbitEstimates?: EbitConsensusEstimate[],
+): ProjectedEbitPoint[] {
+  let previousEbit = baseEbit
+
+  return Array.from({ length: projectionYears }, (_, index) => {
+    const year = index + 1
+    const consensusEstimate = consensusEbitEstimates?.find(item => item.year === year)
+    const growth = consensusEstimate === undefined
+      ? interpolateGrowth({
+        baseGrowth: fallbackBaseGrowth,
+        projectionYears,
+        terminalGrowth,
+        year,
+      })
+      : previousEbit === 0
+        ? 0
+        : (consensusEstimate.ebit / previousEbit) - 1
+    const ebit = consensusEstimate?.ebit ?? previousEbit * (1 + growth)
+    const source = consensusEstimate === undefined ? 'model' : 'consensus'
+
+    previousEbit = ebit
+
+    return {
+      year,
+      ebit,
+      growth,
+      source,
+    }
+  })
+}
+
+export function computeProjectedFcffFromEbit(
+  ebit: number,
+  taxRate: number,
+  dna: number,
+  capex: number,
+  deltaNwc: number,
+): number {
+  const nopat = ebit * (1 - taxRate)
+  return nopat + dna - capex - deltaNwc
 }
 
 function computeBaseGrowth(metrics: FinancialMetric[], lineItems: FinancialLineItem[]): number {
