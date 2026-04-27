@@ -30,7 +30,7 @@ describe('MarketCard', () => {
   it('프로토타입에 맞는 5개 카드 타이틀을 모두 유지한다', () => {
     expect(MARKET_CARD_TITLES).toEqual({
       fearGreed: '시장 심리',
-      yieldCurve: '경기 신호등',
+      yieldCurve: '경기 신호',
       erp: '주식 vs 채권 매력도',
       creditSpread: '기업 부도 위험',
       m2: '시중 돈의 양',
