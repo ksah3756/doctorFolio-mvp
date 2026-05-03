@@ -35,7 +35,7 @@ export function readSignalCache(): TradingSignalCache {
   }
 }
 
-export async function loadTradingSignals(positions: PortfolioPosition[]): Promise<TradingSignal[]> {
+export async function loadTradingSignals(positions: PortfolioPosition[], forceRefresh = false): Promise<TradingSignal[]> {
   const targets = listSignalTargets(positions)
   const cache = readSignalCache()
   const now = Date.now()
@@ -46,7 +46,7 @@ export async function loadTradingSignals(positions: PortfolioPosition[]): Promis
     const key = getTradingSignalCacheKey(target)
     const cached = cache[key]
 
-    if (cached && (now - cached.savedAt) < SIGNAL_CACHE_SECONDS * 1000) {
+    if (!forceRefresh && cached && (now - cached.savedAt) < SIGNAL_CACHE_SECONDS * 1000) {
       freshSignals.set(key, cached.data)
       continue
     }

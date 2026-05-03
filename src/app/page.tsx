@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SESSION_KEYS } from '@/lib/types'
-import { parseOcrErrorResponse } from '@/lib/ocr'
+import { useOcrPositions } from '@/lib/portfolioQueries'
 import styles from './page.module.css'
 
 type LoadingStep = { name: string; done: boolean; active: boolean }
@@ -17,6 +17,7 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
   const [progressLabel, setProgressLabel] = useState('')
+  const ocrMutation = useOcrPositions()
 
   async function resizeImage(file: File): Promise<Blob> {
     return new Promise((resolve) => {
@@ -52,11 +53,7 @@ export default function UploadPage() {
     }
 
     try {
-      const res = await fetch('/api/ocr', { method: 'POST', body: formData })
-      if (!res.ok) {
-        throw new Error(parseOcrErrorResponse(await res.text()))
-      }
-      const positions = await res.json()
+      const positions = await ocrMutation.mutateAsync(formData)
 
       // 로딩 애니메이션: 종목 하나씩
       for (let i = 0; i < positions.length; i++) {
@@ -120,7 +117,7 @@ export default function UploadPage() {
           className={styles.dropZone}
           onClick={() => inputRef.current?.click()}
           onDragOver={e => e.preventDefault()}
-          onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}
+          onDrop={e => { e.preventDefault(); void handleFiles(e.dataTransfer.files) }}
         >
           <div className={styles.iconWrap}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -138,7 +135,7 @@ export default function UploadPage() {
           accept="image/*"
           multiple
           style={{ display: 'none' }}
-          onChange={e => e.target.files && handleFiles(e.target.files)}
+          onChange={e => { if (e.target.files) void handleFiles(e.target.files) }}
         />
 
         <p className={styles.privacy}>🔒 이미지는 AI 분석 목적으로 Anthropic Claude API에 전송되며, 분석 후 저장되지 않습니다.</p>

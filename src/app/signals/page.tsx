@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/BottomNav'
 import { SignalCard } from '@/components/SignalCard'
-import { listSignalTargets, loadTradingSignals } from '@/lib/tradingSignalsClient'
+import { useTradingSignals } from '@/lib/portfolioQueries'
+import { listSignalTargets } from '@/lib/tradingSignalsClient'
 import { SESSION_KEYS, type PortfolioPosition } from '@/lib/types'
-import type { TradingSignal } from '@/lib/tradingSignals'
+import { useUiStore } from '@/lib/uiStore'
 import styles from './page.module.css'
 
 function readConfirmedPositions(): PortfolioPosition[] {
@@ -22,29 +23,14 @@ function readConfirmedPositions(): PortfolioPosition[] {
   }
 }
 
-function subscribeToClientReady() {
-  return () => {}
-}
-
-function getClientReadySnapshot() {
-  return true
-}
-
-function getServerReadySnapshot() {
-  return false
-}
-
 export default function SignalsPage() {
   const router = useRouter()
-  const isClient = useSyncExternalStore(
-    subscribeToClientReady,
-    getClientReadySnapshot,
-    getServerReadySnapshot,
-  )
+  const isClient = useUiStore(state => state.isClientReady)
   const positions = useMemo(() => (isClient ? readConfirmedPositions() : []), [isClient])
-  const [signals, setSignals] = useState<TradingSignal[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const signalsQuery = useTradingSignals(positions)
+  const signals = useMemo(() => signalsQuery.data ?? [], [signalsQuery.data])
+  const loading = signalsQuery.isPending
+  const error = signalsQuery.isError
   const supportedCount = useMemo(() => listSignalTargets(positions).length, [positions])
   const sectorByTarget = useMemo(() => {
     const entries = new Map<string, string>()
@@ -87,17 +73,8 @@ export default function SignalsPage() {
     0,
   )
 
-  async function handleRefresh() {
-    setLoading(true)
-    setError(null)
-
-    try {
-      setSignals(await loadTradingSignals(positions))
-    } catch {
-      setError('종목 시그널을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
-    } finally {
-      setLoading(false)
-    }
+  function handleRefresh() {
+    void signalsQuery.refresh().catch(() => {})
   }
 
   useEffect(() => {
@@ -107,29 +84,6 @@ export default function SignalsPage() {
       return
     }
   }, [isClient, positions.length, router])
-
-  useEffect(() => {
-    if (!isClient || positions.length === 0) return
-
-    let active = true
-
-    async function hydrateSignals() {
-      try {
-        const nextSignals = await loadTradingSignals(positions)
-        if (active) setSignals(nextSignals)
-      } catch {
-        if (active) setError('종목 시그널을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    void hydrateSignals()
-
-    return () => {
-      active = false
-    }
-  }, [isClient, positions])
 
   if (!isClient) return null
 
@@ -148,8 +102,8 @@ export default function SignalsPage() {
 
         {error && (
           <div className={styles.stateCard}>
-            <p>{error}</p>
-            <button className={styles.inlineRetry} onClick={() => void handleRefresh()}>
+            <p>종목 시그널을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+            <button className={styles.inlineRetry} onClick={handleRefresh}>
               페이지 다시 불러오기
             </button>
           </div>
@@ -203,7 +157,7 @@ export default function SignalsPage() {
             <button className={styles.secondaryButton} onClick={() => router.push('/diagnosis')}>
               진단으로 돌아가기
             </button>
-            <button className={styles.primaryButton} onClick={() => void handleRefresh()}>
+            <button className={styles.primaryButton} onClick={handleRefresh}>
               최신 신호 다시 보기
             </button>
           </div>

@@ -1,7 +1,8 @@
 // src/app/diagnosis/page.tsx
 'use client'
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { ProblemCard } from '@/components/ProblemCard'
 import { AllocationBar } from '@/components/AllocationBar'
 import { BottomNav } from '@/components/BottomNav'
@@ -13,9 +14,13 @@ import { inferStyleKey } from '@/lib/investorProfile'
 import { getTargetAllocationErrorMessage } from '@/lib/targetAllocation'
 import { inferMbtiType, MBTI_PROFILES } from '@/lib/mbti'
 import { buildSectorAllocation } from '@/lib/sectorAllocation'
-import { prefetchMarketSignals } from '@/lib/marketSignalsClient'
-import { prefetchTradingSignals } from '@/lib/tradingSignalsClient'
+import {
+  useExplainDiagnosis,
+  warmMarketSignalsCache,
+  warmTradingSignalsCache,
+} from '@/lib/portfolioQueries'
 import { SESSION_KEYS } from '@/lib/types'
+import { useUiStore } from '@/lib/uiStore'
 import type {
   DiagnosisResult,
   InvestorProfile,
@@ -37,18 +42,6 @@ function readConfirmedPositions(): PortfolioPosition[] {
   } catch {
     return []
   }
-}
-
-function subscribeToClientReady() {
-  return () => {}
-}
-
-function getClientReadySnapshot() {
-  return true
-}
-
-function getServerReadySnapshot() {
-  return false
 }
 
 function readStoredDiagnosis(): DiagnosisResult | null {
@@ -93,20 +86,16 @@ function readDesiredStyle(positions: PortfolioPosition[]): StyleKey {
 
 export default function DiagnosisPage() {
   const router = useRouter()
-  const isClient = useSyncExternalStore(
-    subscribeToClientReady,
-    getClientReadySnapshot,
-    getServerReadySnapshot,
-  )
+  const queryClient = useQueryClient()
+  const isClient = useUiStore(state => state.isClientReady)
   const diagnosis = useMemo(() => (isClient ? readStoredDiagnosis() : null), [isClient])
   const positions = useMemo(() => (isClient ? readConfirmedPositions() : []), [isClient])
   const desiredStyle = useMemo(() => readDesiredStyle(positions), [positions])
   const [copied, setCopied] = useState(false)
   const [explainOpen, setExplainOpen] = useState(false)
   const [explanation, setExplanation] = useState<string | null>(null)
-  const [explainLoading, setExplainLoading] = useState(false)
-  const [explainError, setExplainError] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const explainMutation = useExplainDiagnosis()
 
   useEffect(() => {
     if (isClient && !diagnosis) router.replace('/')
@@ -119,32 +108,26 @@ export default function DiagnosisPage() {
     if (positions.length === 0) return
 
     void Promise.allSettled([
-      prefetchTradingSignals(positions),
-      prefetchMarketSignals(),
+      warmTradingSignalsCache(queryClient, positions),
+      warmMarketSignalsCache(queryClient),
     ])
-  }, [isClient, positions, router])
+  }, [isClient, positions, queryClient, router])
+
+  async function loadExplanation() {
+    if (!diagnosis) return
+    explainMutation.reset()
+    try {
+      setExplanation(await explainMutation.mutateAsync(diagnosis))
+    } catch (error) {
+      console.error('Failed to load diagnosis explanation', error)
+    }
+  }
 
   async function toggleExplain() {
     if (explainOpen) { setExplainOpen(false); return }
     setExplainOpen(true)
     if (explanation) return
-
-    setExplainLoading(true)
-    setExplainError(false)
-    try {
-      const res = await fetch('/api/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(diagnosis),
-      })
-      if (!res.ok) throw new Error()
-      const data = await res.json()
-      setExplanation(data.explanation)
-    } catch {
-      setExplainError(true)
-    } finally {
-      setExplainLoading(false)
-    }
+    await loadExplanation()
   }
 
   const mbtiType = inferMbtiType(positions)
@@ -274,12 +257,12 @@ export default function DiagnosisPage() {
         </button>
         {explainOpen && (
           <div className={styles.explainBody}>
-            {explainLoading && <p>설명 불러오는 중...</p>}
-            {explainError && (
+            {explainMutation.isPending && <p>설명 불러오는 중...</p>}
+            {explainMutation.isError && (
               <p>설명을 불러오지 못했습니다.{' '}
                 <button
                   type="button"
-                  onClick={() => { setExplanation(null); setExplainError(false); toggleExplain() }}
+                  onClick={() => { setExplanation(null); void loadExplanation() }}
                 >
                   다시 시도
                 </button>

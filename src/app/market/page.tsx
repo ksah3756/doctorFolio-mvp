@@ -1,53 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { BottomNav } from '@/components/BottomNav'
 import { MarketCard } from '@/components/MarketCard'
 import { buildMarketInsight } from '@/lib/marketInsightTemplates'
-import type { MarketResponse } from '@/lib/marketSignals'
-import { loadMarketSignals } from '@/lib/marketSignalsClient'
+import { useMarketSignals } from '@/lib/portfolioQueries'
 import styles from './page.module.css'
 
 const SKELETON_COUNT = 5
 const INDICATOR_ORDER = ['fearGreed', 'yieldCurve', 'erp', 'creditSpread', 'm2'] as const
 
 export default function MarketPage() {
-  const [market, setMarket] = useState<MarketResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const marketQuery = useMarketSignals()
+  const market = marketQuery.data ?? null
+  const loading = marketQuery.isPending
+  const error = marketQuery.isError
 
-  useEffect(() => {
-    let active = true
-
-    async function hydrateMarket() {
-      try {
-        const nextMarket = await loadMarketSignals()
-        if (active) setMarket(nextMarket)
-      } catch {
-        if (active) setError('시장 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    void hydrateMarket()
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  async function handleRefresh() {
-    setLoading(true)
-    setError(null)
-
-    try {
-      setMarket(await loadMarketSignals(true))
-    } catch {
-      setError('시장 데이터를 다시 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
-    } finally {
-      setLoading(false)
-    }
+  function handleRefresh() {
+    void marketQuery.refresh().catch(() => {})
   }
 
   const entry = market?.overview.entry
@@ -87,8 +56,8 @@ export default function MarketPage() {
 
           {error && !market && (
             <div className={styles.stateCard}>
-              <p>{error}</p>
-              <button className={styles.inlineRetry} onClick={() => void handleRefresh()}>
+              <p>시장 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+              <button className={styles.inlineRetry} onClick={handleRefresh}>
                 다시 시도
               </button>
             </div>
@@ -126,7 +95,7 @@ export default function MarketPage() {
           <div className={styles.sectionHeader}>
             <div className={styles.sectionEyebrow}>5가지 신호 상세</div>
             {!loading && (
-              <button className={styles.refreshButton} onClick={() => void handleRefresh()}>
+              <button className={styles.refreshButton} onClick={handleRefresh}>
                 새로고침
               </button>
             )}
